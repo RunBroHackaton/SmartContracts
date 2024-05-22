@@ -44,7 +44,7 @@ contract Proxy {
         _delegate();
     }
 
-    function upgradeTo(address _implementation) external {
+    function upgradeTo(address _implementation) external { // address of Reward.sol
         require(msg.sender == admin, "not authorized");
         implementation = _implementation;
     }
