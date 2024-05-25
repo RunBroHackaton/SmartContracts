@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.18;
 
 // @dev
 // In this contract the worth of a RB token is determined i.e what's the value of 1 RB token in ETH?

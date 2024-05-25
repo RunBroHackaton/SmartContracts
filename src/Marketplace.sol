@@ -1,122 +1,128 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.9;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {PoolModel2} from "./PoolModels/PoolModel2.sol";
 
-contract Marketplace {
-    //Errors
-    error Marketplace__InsufficientBalance();
-    error Marketplace__ListingDoesNotExist();
+interface IWETH {
+    function deposit() external payable;
+    function transfer(address to, uint value) external returns (bool);
+    function balanceOf(address owner) external view returns (uint);
+}
 
-    //State variables
-    IERC20 public s_runBroToken; // RunBroToken contract address
-    AggregatorV3Interface internal s_priceFeed; // Chainlink price feed contract address
+contract MarketPlace {
 
-    //Array to store shoe listings by ID
-    struct ShoeListing {
-        address owner;
+    address public owner;
+    PoolModel2 public pool;
+    IWETH public weth;
+
+    struct Shoe {
+        uint256 id;
         string name;
-        uint256 price;
-        string imageUrl;
-    }
-    ShoeListing[] public shoeListings;
-
-    // Event definitions
-    event ShoeListed(
-        uint256 indexed _listingId,
-        string indexed _name,
-        uint256 _priceInWei,
-        string _imageUrl
-    );
-    event ShoeBought(
-        uint256 indexed _listingId,
-        address indexed _buyer,
-        uint256 _amountPaid
-    );
-
-    /**@dev be sure to add the actual address of
-     * @param  _priceFeedAddress: chainlink pricefeed
-     */
-    constructor(address _runBroTokenAddress, address _priceFeedAddress) {
-        s_runBroToken = IERC20(_runBroTokenAddress);
-        s_priceFeed = AggregatorV3Interface(_priceFeedAddress);
+        string brand;
+        string image;
+        uint256 cost;
+        uint256 RB_Factor;
+        uint256 quantity; // let's keep it one
+        address lister;
     }
 
-    // Get the current price from chainlink
-    function getLatestPrice() public view returns (int) {
-        (, int price, , , ) = s_priceFeed.latestRoundData();
-        return price;
+    struct Order {
+        uint256 time;
+        Shoe shoe;
     }
 
-    /**
-     * List shoe price and image
-     * @param _name: name of the shoe
-     * @param _priceInWei: list the price in wei
-     * @param _imageUrl: to list the image of the shoe
-     */
-    function listShoe(
+    mapping(uint256 => Shoe) public shoes;
+    mapping(address => mapping(uint256 => Order)) public orders;
+    mapping(address => uint256) public orderCount;
+
+    mapping(address => mapping (uint256 => bool)) public hasUserPurchased_A_Shoe;
+
+    event Buy(address buyer, uint256 orderId, uint256 shoeId, uint256 RB_Factor, bool purchasedOrNot);
+    event List(uint256 id, string name, string brand, string image, uint256 cost, uint256 RB_Factor, uint256 _quantity, address lister);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
+    constructor(address payable _pool, address payable _weth) {
+        owner = msg.sender;
+        pool = PoolModel2(_pool);
+        weth = IWETH(_weth);
+    }
+
+    function list(
+        uint256 _id,
         string memory _name,
-        uint256 _priceInWei,
-        string memory _imageUrl
-    ) public {
-        //revert if balance is too low
-        if (s_runBroToken.balanceOf(msg.sender) < _priceInWei) {
-            revert Marketplace__InsufficientBalance();
-        }
+        string memory _brand,
+        string memory _image,
+        uint256 _cost,
+        uint256 _RB_Factor,
+        uint256 _quantity
+    ) public payable {
+        // Create Shoe Item
+        Shoe memory shoe = Shoe(
+            _id,
+            _name,
+            _brand,
+            _image,
+            _cost,
+            _RB_Factor,
+            _quantity,
+            msg.sender
+        );
 
-        // Create a new ShoeListing
-        ShoeListing memory newListing = ShoeListing({
-            owner: msg.sender, // Set the owner to the caller of the function
-            name: _name,
-            price: _priceInWei,
-            imageUrl: _imageUrl
-        });
+        uint platformFee = (_cost*10)/100; // 10% percent of fee will be transfered to Pool.sol
+        require(msg.value>=platformFee,"Please enter valid amount");
 
-        // Add the new listing to the shoeListings array
-        // Transfer the price amount from the sender to the contract
-        shoeListings.push(newListing);
-        s_runBroToken.transferFrom(msg.sender, address(this), _priceInWei);
-        emit ShoeListed(shoeListings.length, _name, _priceInWei, _imageUrl);
+        shoes[_id] = shoe;
+        emit List(_id, _name, _brand, _image, _cost, _RB_Factor, _quantity, msg.sender);
+
+        weth.deposit{value: platformFee}();
+        require(weth.transfer(address(pool), platformFee));
     }
 
-    function buyShoe(uint256 _listingId) public payable {
-        ShoeListing storage listing = shoeListings[_listingId];
+    function buy(uint256 _id) public payable {
 
-        // Check if the listing exists
-        if (_listingId >= shoeListings.length) {
-            revert Marketplace__ListingDoesNotExist();
-        }
+        Shoe memory shoe = shoes[_id];
+        require(msg.value >= shoe.cost);
+        require(shoe.quantity > 0);
 
-        // Calculate the amount to send
-        // Transfer the purchased amount from the buyer to the seller
-        // Update the listing status
-        uint256 amountToSend = msg.value;
-        s_runBroToken.transfer(listing.owner, amountToSend);
-        delete shoeListings[_listingId];
-        emit ShoeBought(_listingId, msg.sender, amountToSend);
+    // This Order parameter will track if user wants to purchase more than 1 shoe.
+        Order memory order = Order(block.timestamp, shoe);
+        orderCount[msg.sender]++; // <-- Order ID
+        orders[msg.sender][orderCount[msg.sender]] = order;
+
+        shoes[_id].quantity = shoe.quantity - 1;
+        hasUserPurchased_A_Shoe[msg.sender][_id]= true;
+        emit Buy(msg.sender, orderCount[msg.sender], shoe.id, shoe.RB_Factor, true);
+
+        (bool success,) = shoe.lister.call{value: msg.value}(""); // Pay to lister of shoe
+        require(success);
     }
 
-    /** Getter Functions */
-    // Function to get the total number of listings
-    function getTotalListingsCount() public view returns (uint256) {
-        return shoeListings.length;
+    // If user has more than 1 shoe, he can choose which shoe he want to earn reward with.
+    function selectShoe(uint256 _shoeId) public view returns(Shoe memory){
+        require(hasUserPurchased_A_Shoe[msg.sender][_shoeId],"You does not own this shoe");
+        Shoe memory shoe = shoes[_shoeId];
+        return shoe;
     }
 
-    // Function to get the details of a specific shoe listing by ID
-    function getShoeListingDetails(
-        uint256 _listingId
-    )
-        public
-        view
-        returns (
-            address owner,
-            string memory name,
-            uint256 price,
-            string memory imageUrl
-        )
-    {
-        ShoeListing storage listing = shoeListings[_listingId];
-        return (listing.owner, listing.name, listing.price, listing.imageUrl);
+    function hasPurchasedShoe(address _account, uint256 _shoeId) public view returns(bool){
+        return hasUserPurchased_A_Shoe[_account][_shoeId];
+    }
+
+    // Function to get the purchase timestamp for a specific order
+    function getOrderTime(address _account, uint256 _orderId) public view returns (uint256) {
+        return orders[_account][_orderId].time;
+    }
+
+    // Function to get the RB_Factor of a shoe
+    function getShoeRB_Factor(uint256 _shoeId) public view returns (uint256) {
+        return shoes[_shoeId].RB_Factor;
+    }
+
+    function getBalance() public view returns (uint256) {
+        return address(this).balance;
     }
 }
