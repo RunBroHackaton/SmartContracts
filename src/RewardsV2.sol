@@ -4,15 +4,21 @@ pragma solidity ^0.8.18;
 import {RunBroToken} from "./RunBroToken.sol";
 import {Marketplace} from "./Marketplace.sol";
 import {RewardToken} from "./RewardToken.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
-contract Reward {
+contract Reward is Ownable, Pausable {
+    //errors
+    error Reward__StepsMustBeGreaterThanZero();
+    error Reward__PurchaseMustBeGreaterThanZero();
+
     // State variables
     RunBroToken public s_runBroToken;
     Marketplace public s_marketplace;
     RewardToken public s_rewardToken;
     uint256 public s_totalSteps;
+    uint256 public s_totalSupplyOfRewardTokens;
     uint256 public immutable i_rewardValidityTimeLimit;
-    uint256 public immutable i_totalSupplyOfRewardTokens;
 
     // Mapping to track user steps
     mapping(address => uint256) public s_userSteps;
@@ -32,26 +38,28 @@ contract Reward {
         address _marketplaceAddress,
         address _rewardTokenAddress,
         uint256 _rewardValidityTimeLimit
-    ) {
+    ) Ownable(msg.sender) Pausable() {
         s_runBroToken = RunBroToken(_runBroTokenAddress);
         s_marketplace = Marketplace(_marketplaceAddress);
         s_rewardToken = RewardToken(_rewardTokenAddress);
         i_rewardValidityTimeLimit = _rewardValidityTimeLimit;
-        i_totalSupplyOfRewardTokens = 0;
+        s_totalSupplyOfRewardTokens = 0;
     }
 
     // Modifier to check if the reward is valid
     modifier isValidReward() {
         require(
-            block.timestamp <=
-                i_totalSupplyOfRewardTokens + i_rewardValidityTimeLimit,
+            block.timestamp <= block.timestamp + i_rewardValidityTimeLimit,
             "Reward expired"
         );
         _;
     }
 
     // Function to record steps taken by a user
-    function recordSteps(uint256 steps) public {
+    function recordSteps(uint256 steps) public whenNotPaused {
+        if (steps <= 0) {
+            revert Reward__StepsMustBeGreaterThanZero();
+        }
         s_userSteps[msg.sender] += steps;
         s_totalSteps += steps;
         emit StepsTaken(msg.sender, steps);
@@ -60,8 +68,12 @@ contract Reward {
     // Function to calculate and distribute reward tokens upon purchase
     function calculatePurchaseReward(
         uint256 purchaseAmount
-    ) public isValidReward {
+    ) public isValidReward whenNotPaused {
+        if (purchaseAmount <= 0) {
+            revert Reward__PurchaseMustBeGreaterThanZero();
+        }
         uint256 rewardAmount = calculateReward(purchaseAmount);
+        s_totalSupplyOfRewardTokens += rewardAmount;
         s_rewardToken.mintRewards(msg.sender, rewardAmount);
         emit PurchaseMade(msg.sender, rewardAmount);
     }
@@ -84,8 +96,9 @@ contract Reward {
     function handleAffiliateMarketing(
         address referrer,
         address referred
-    ) public isValidReward {
+    ) public isValidReward whenNotPaused {
         uint256 rewardAmount = calculateAffiliateReward(referrer, referred);
+        s_totalSupplyOfRewardTokens += rewardAmount;
         s_rewardToken.mintRewards(referred, rewardAmount);
         emit AffiliateMarketing(referrer, referred, rewardAmount);
     }
@@ -118,6 +131,22 @@ contract Reward {
     }
 
     function getTotalSupplyOfRewardTokens() public view returns (uint256) {
-        return i_totalSupplyOfRewardTokens;
+        return s_totalSupplyOfRewardTokens;
+    }
+
+    // Owner-only function to set a new marketplace address
+    function setMarketplaceAddress(
+        address _marketplaceAddress
+    ) public onlyOwner {
+        s_marketplace = Marketplace(_marketplaceAddress);
+    }
+
+    // Emergency stop functions
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
     }
 }
