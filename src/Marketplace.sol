@@ -36,7 +36,8 @@ contract MarketPlace {
     mapping(address => mapping(uint256 => Order)) public s_orders;
     mapping(address => uint256) public s_orderCount;
 
-    mapping(address=> mapping(address=>uint256)) public s_stepsByUserAtMoment;
+    // user => timestamp => number of steps
+    mapping(address=> mapping(uint256 =>uint256)) public s_stepsByUserAtMoment;
 
     mapping(bytes32 => address) private s_emailToAddress;
     mapping(bytes32 => uint256) private s_emailToSteps;
@@ -70,9 +71,8 @@ contract MarketPlace {
     // Function to map an email to an steps covered
     // **IMP - THIS FUNCTION WILL BE CALLED WHEN USER FETCHES HIS API DATA.
     function mapEmailToSteps(string calldata _email, uint256 _steps) external {
-        require(_email != "", "Enter eemail");
         bytes32 hashed = _stringToHash(_email);
-
+        require(hashed != 0, "Enter eemail");
         s_emailToSteps[hashed] = _steps;
         emit EmailToStepsMapped(hashed, _steps);
     }
@@ -88,14 +88,14 @@ contract MarketPlace {
         emit EmailToAddressMapped(hashed, _account);
     }
 
-    function _stringToHash(string memory _string) internal returns(bytes32){
+    function _stringToHash(string memory _string) internal pure returns(bytes32){
         return keccak256(abi.encode(_string));
     }
 
     // **IMP - WHEN USER PURCHASES A SHOE THIS FUNCTION WILL BE CALLED.
     function linkAddressToSteps(string calldata _email, address _account) public {
         bytes32 hashed = _stringToHash(_email);
-        require(s_emailToAddress[hashed] = _account, "Invalid Data");
+        require(s_emailToAddress[hashed] == _account, "Invalid Data");
         s_stepsByUserAtMoment[_account][block.timestamp]=s_emailToSteps[hashed];
     }
 

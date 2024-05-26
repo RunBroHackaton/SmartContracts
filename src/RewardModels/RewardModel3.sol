@@ -39,7 +39,7 @@ contract Reward{
 
     //**IMP - Called By User
     function calculateReward(address _account, uint256 _shoeId) public returns(uint256){
-        uint256 rewardOfUser = ((calculateSharesOfUser(_account, _shoeId)*pool.rbReserve()) // To neutralize the scaling factor we need to divide by 1e18.
+        uint256 rewardOfUser = ((calculateSharesOfUser(_account, _shoeId)*pool.s_rbReserve()) // To neutralize the scaling factor we need to divide by 1e18.
                                *i_marketplace.getShoeRB_Factor(_shoeId))/1e18;
         return rewardOfUser;
     }
