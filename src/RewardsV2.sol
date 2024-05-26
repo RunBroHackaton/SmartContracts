@@ -3,9 +3,9 @@ pragma solidity ^0.8.18;
 
 import {RunBroToken} from "./RunBroToken.sol";
 import {Marketplace} from "./Marketplace.sol";
-import {RewardToken} from "./RewardToken.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
  * @title Reward Contract
@@ -27,7 +27,6 @@ contract Reward is Ownable, Pausable {
     // State variables
     RunBroToken public s_runBroToken;
     Marketplace public s_marketplace;
-    RewardToken public s_rewardToken;
     uint256 public s_totalSteps;
     uint256 public s_monthlySteps;
     uint256 public s_totalSupplyOfRewardTokens;
@@ -52,12 +51,10 @@ contract Reward is Ownable, Pausable {
     constructor(
         address _runBroTokenAddress,
         address _marketplaceAddress,
-        address _rewardTokenAddress,
         uint256 _rewardValidityTimeLimit
     ) Ownable(msg.sender) Pausable() {
         s_runBroToken = RunBroToken(_runBroTokenAddress);
         s_marketplace = Marketplace(_marketplaceAddress);
-        s_rewardToken = RewardToken(_rewardTokenAddress);
         s_totalSupplyOfRewardTokens = 10_000_000; // Initial total supply
         s_lastRewardTime = block.timestamp;
         i_rewardValidityTimeLimit = _rewardValidityTimeLimit;
@@ -98,7 +95,7 @@ contract Reward is Ownable, Pausable {
         }
         uint256 rewardAmount = calculateReward(purchaseAmount);
         s_totalSupplyOfRewardTokens += rewardAmount;
-        s_rewardToken.mintRewards(msg.sender, rewardAmount);
+        s_runBroToken.mintRewards(msg.sender, rewardAmount);
         emit PurchaseMade(msg.sender, rewardAmount);
     }
 
@@ -130,24 +127,18 @@ contract Reward is Ownable, Pausable {
                 uint256 rewardAmount = (userSteps * MONTHLY_REWARD_TOKENS) /
                     s_monthlySteps;
                 totalRewardAmount += rewardAmount;
+
+                // Mint rewards and then safely transfer them to the user
+                s_runBroToken.mintRewards(user, rewardAmount);
+                s_runBroToken.safeTransfer(user, rewardAmount); // Ensure user's balance is updated
+                emit MonthlyRewardDistributed(user, rewardAmount);
             }
+            s_monthlyUserSteps[user] = 0; // Reset monthly user steps
         }
 
         // Check if there are enough reward tokens available
         if (totalRewardAmount > s_totalSupplyOfRewardTokens) {
             revert Reward__InsufficientRewardTokens();
-        }
-
-        for (uint i = 0; i < userAddresses.length; i++) {
-            address user = userAddresses[i];
-            uint256 userSteps = s_monthlyUserSteps[user];
-            if (userSteps > 0) {
-                uint256 rewardAmount = (userSteps * MONTHLY_REWARD_TOKENS) /
-                    s_monthlySteps;
-                s_rewardToken.mintRewards(user, rewardAmount);
-                emit MonthlyRewardDistributed(user, rewardAmount);
-            }
-            s_monthlyUserSteps[user] = 0; // Reset monthly user steps
         }
 
         s_monthlySteps = 0; // Reset monthly steps
