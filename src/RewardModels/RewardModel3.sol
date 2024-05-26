@@ -4,40 +4,48 @@ pragma solidity ^0.8.0;
 import {MarketPlace} from "../MarketPlace.sol";
 import {PoolModel2} from "../PoolModels/PoolModel2.sol";
 
-contract StepRewardToken{
-    IERC20 public immutable rewardsToken;
-    MarketPlace public immutable marketplace;
+contract Reward{
+    IERC20 public immutable i_rbToken;
+    MarketPlace public immutable i_marketplace;
     PoolModel2 public immutable pool;
 
     uint256 public constant SCALING_FACTOR = 10**18;
     
-    mapping (address => uint256) public startingTime;
+    mapping (address => uint256) public s_startingTime;
     // user => time => numberOfSteps till that time
-    mapping (address => mapping (uint256 => uint256)) public userStepsAtMoment;
+    mapping (address => mapping (uint256 => uint256)) public s_userStepsAtMoment;
 
     constructor(address _rewardToken, address _marketPlace, address _pool){
-        rewardsToken = IERC20(_rewardToken);
-        marketplace = MarketPlace(_marketPlace);
+        i_rbToken = IERC20(_rewardToken);
+        i_marketplace = MarketPlace(_marketPlace);
         pool = PoolModel2(_pool);
     }
 
+    //**IMP - Called By User
+    function swaprbToken() public {
+        require(i_rbToken.balanceOf(msg.sender)>0, "You don't have suffient RB Tokens");
+        pool.swap(address(i_rbToken), i_rbToken.balanceOf(msg.sender));
+    }
+
+    //**IMP - Called By User
     function claimReward(uint256 _shoeId) public {
-        require(marketplace.hasPurchasedShoe(msg.sender,_shoeId),"You are not eligible");
+        require(i_marketplace.hasPurchasedShoe(msg.sender,_shoeId),"You are not eligible");
         // more checks
     
         uint256 reward = calculateReward(msg.sender, _shoeId);
         _update_startingTime(msg.sender);
-        rewardsToken.transfer(msg.sender, reward);
+        i_rbToken.transfer(msg.sender, reward);
     }
 
+    //**IMP - Called By User
     function calculateReward(address _account, uint256 _shoeId) public returns(uint256){
-        uint256 rewardOfUser = ((calculateSharesOfUser(_account, _shoeId)*pool.reserve1()) // To neutralize the scaling factor we need to divide by 1e18.
-                               *marketplace.getShoeRB_Factor(_shoeId))/1e18;
+        uint256 rewardOfUser = ((calculateSharesOfUser(_account, _shoeId)*pool.rbReserve()) // To neutralize the scaling factor we need to divide by 1e18.
+                               *i_marketplace.getShoeRB_Factor(_shoeId))/1e18;
         return rewardOfUser;
     }
 
     function _update_startingTime(address _account) internal{
-        startingTime[_account]= block.timestamp;
+        s_startingTime[_account]= block.timestamp;
     }
 
     function calculateSharesOfUser(address _account, uint256 _shoeId) public returns(uint256){
@@ -49,19 +57,29 @@ contract StepRewardToken{
         uint256 shareOfUser = (totalStepsByUser * SCALING_FACTOR) / totalStepsByAllUsers;
         return shareOfUser;
     }
- 
-    function _registrationTime_InPlatform_ByUser(address _account, uint256 _shoeId) internal view returns (uint256) {
-        return marketplace.getOrderTime(_account, _shoeId);
-    }
 
+   //--------------------------------------------DANGER-ZONE----------------------------------------------------
+   // All this functions are totally dependent on the retrived value of steps of user.
+
+   // this function can probably trigger chainlink function to retrieve data.
     function totalStepsInPeriod_ByUser(address _account, uint256 _shoeId) public returns (uint256){
-        startingTime[_account] = _registrationTime_InPlatform_ByUser(_account, _shoeId);
-        return userStepsAtMoment[_account][block.timestamp]-
-        userStepsAtMoment[_account][startingTime[_account]];
+        s_startingTime[_account] = _registrationTime_InPlatform_ByUser(_account, _shoeId);
+        return s_userStepsAtMoment[_account][block.timestamp]-
+        s_userStepsAtMoment[_account][s_startingTime[_account]];
     }
 
+    function _registrationTime_InPlatform_ByUser(address _account, uint256 _shoeId) internal view returns (uint256) {
+        return i_marketplace.getOrderTime(_account, _shoeId);
+    }
+
+    // this function can probably trigger chainlink function to retrieve data.
     function totalStepsInPeriod_ByAllUsers() internal pure returns (uint256) {
+        // Logic to get steps by all users
         return 100000; 
+    }
+
+    function createMockData(address _mock_account, uint256 _mock_shoeId, uint256 _mock_steps) public {
+
     }
 }
 

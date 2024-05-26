@@ -1,10 +1,12 @@
+// -----------------------------------------Not In Use--------------------------------------------------------
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 // import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract StepRewardToken{
+contract Reward{
     IERC20 public immutable rewardsToken;
     uint256 public constant MAX_SUPPLY = 1000000 * 10**18; // 1 million tokens
     uint256 public totalMinted = 0;
