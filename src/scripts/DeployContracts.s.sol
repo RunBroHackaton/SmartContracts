@@ -30,13 +30,14 @@ contract DeployContracts is Script {
         );
 
         vm.stopBroadcast();
-
+        vm.deal(seller,100000);
         vm.startPrank(seller);
-        marketPlace.list(0, "Run", "Bro", "image url", 120, 150, 1);
+        marketPlace.list{value: 130}(0, "Run", "Bro", "image url", 120, 150, 1);
         vm.stopPrank();
 
+        vm.deal(buyer, 100000);
         vm.startPrank(buyer);
-        marketPlace.buy(0);
+        marketPlace.buy{value: 130}(0);
         vm.stopPrank();
         //-------------------------------------------------------------------------------------------
         vm.startPrank(owner);
