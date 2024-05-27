@@ -23,7 +23,7 @@ contract DeployContracts is Script {
         vm.prank(owner);
         RunBroToken rbToken = new RunBroToken(initialSupply);
         PoolModel2 pool = new PoolModel2(wethAddress, address(rbToken));
-        rbToken.approve(address(pool), inital_rbTokens);
+        rbToken.approve(address(pool), initial_rbTokens);
         pool.setIntialBalanceOfpool(initial_rbTokens);
         //-------------------------------------------------------------------------------------------
         MarketPlace marketPlace = new MarketPlace(payable(address(pool)), payable(wethAddress));
