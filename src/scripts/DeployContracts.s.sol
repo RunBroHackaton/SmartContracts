@@ -18,20 +18,21 @@ contract DeployContracts is Script {
 
     function run() external {
         vm.startBroadcast();
-        vm.prank(owner);
+
         RunBroToken rbToken = new RunBroToken(initialSupply);
         PoolModel2 pool = new PoolModel2(wethAddress, address(rbToken));
         rbToken.approve(address(pool), initial_rbTokens);
         pool.setIntialBalanceOfpool(initial_rbTokens);
-        //-------------------------------------------------------------------------------------------
+
         MarketPlace marketPlace = new MarketPlace(
             payable(address(pool)),
             payable(wethAddress)
         );
-        vm.stopPrank();
+
+        vm.stopBroadcast();
 
         vm.startPrank(seller);
-        marketPlace.list(0, "A1", "B1", "C1", 120, 150, 1);
+        marketPlace.list(0, "Run", "Bro", "image url", 120, 150, 1);
         vm.stopPrank();
 
         vm.startPrank(buyer);
@@ -50,7 +51,47 @@ contract DeployContracts is Script {
         vm.startPrank(buyer);
         reward.claimReward(0);
         vm.stopPrank();
-
-        vm.stopBroadcast();
     }
 }
+
+/**
+ * @dev The code below needs to be sorted.
+ * Cannot have vm.prank in deploy script
+ *  you'll need to interact with them using the actual Ethereum accounts
+ *          corresponding to the roles defined in your script (owner, seller, buyer)
+ */
+
+//    vm.prank(owner);
+//         RunBroToken rbToken = new RunBroToken(initialSupply);
+//         PoolModel2 pool = new PoolModel2(wethAddress, address(rbToken));
+//         rbToken.approve(address(pool), initial_rbTokens);
+//         pool.setIntialBalanceOfpool(initial_rbTokens);
+//         //-------------------------------------------------------------------------------------------
+//         MarketPlace marketPlace = new MarketPlace(
+//             payable(address(pool)),
+//             payable(wethAddress)
+//         );
+//         vm.stopPrank();
+
+//         vm.startPrank(seller);
+//         marketPlace.list(0, "A1", "B1", "C1", 120, 150, 1);
+//         vm.stopPrank();
+
+//         vm.startPrank(buyer);
+//         marketPlace.buy(0);
+//         vm.stopPrank();
+//         //-------------------------------------------------------------------------------------------
+//         vm.startPrank(owner);
+//         Reward reward = new Reward(
+//             address(rbToken),
+//             address(marketPlace),
+//             address(pool)
+//         );
+//         reward.calculateReward(buyer, 0);
+//         vm.stopPrank();
+
+//         vm.startPrank(buyer);
+//         reward.claimReward(0);
+//         vm.stopPrank();
+
+//

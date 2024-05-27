@@ -5,12 +5,13 @@ import {PoolModel2} from "./PoolModels/PoolModel2.sol";
 
 interface IWETH {
     function deposit() external payable;
+
     function transfer(address to, uint value) external returns (bool);
+
     function balanceOf(address s_owner) external view returns (uint);
 }
 
 contract MarketPlace {
-
     address public s_owner;
     PoolModel2 public pool;
     IWETH public weth;
@@ -37,23 +38,46 @@ contract MarketPlace {
     mapping(address => uint256) public s_orderCount;
 
     // user => timestamp => number of steps
-    mapping(address=> mapping(uint256 =>uint256)) public s_stepsByUserAtMoment;
+    mapping(address => mapping(uint256 => uint256))
+        public s_stepsByUserAtMoment;
 
     mapping(bytes32 => address) private s_emailToAddress;
     mapping(bytes32 => uint256) private s_emailToSteps;
-    mapping(address => mapping (uint256 => bool)) public s_hasUserPurchased_A_Shoe;
+    mapping(address => mapping(uint256 => bool))
+        public s_hasUserPurchased_A_Shoe;
 
-    event Buy(address buyer, uint256 orderId, uint256 shoeId, uint256 RB_Factor, bool purchasedOrNot);
-    event List(uint256 id, string name, string brand, string image, uint256 cost, uint256 RB_Factor, uint256 _quantity, address lister);
-    event EmailToAddressMapped(bytes32 indexed emailHash, address indexed userAddress);
-    event EmailToStepsMapped(bytes32 indexed emailHash, uint256 indexed userAddress);
+    event Buy(
+        address buyer,
+        uint256 orderId,
+        uint256 shoeId,
+        uint256 RB_Factor,
+        bool purchasedOrNot
+    );
+    event List(
+        uint256 id,
+        string name,
+        string brand,
+        string image,
+        uint256 cost,
+        uint256 RB_Factor,
+        uint256 _quantity,
+        address lister
+    );
+    event EmailToAddressMapped(
+        bytes32 indexed emailHash,
+        address indexed userAddress
+    );
+    event EmailToStepsMapped(
+        bytes32 indexed emailHash,
+        uint256 indexed userAddress
+    );
 
     modifier onlyOwner() {
         require(msg.sender == s_owner);
         _;
     }
 
-    modifier shoeValidity(uint256 _id){
+    modifier shoeValidity(uint256 _id) {
         require(!s_isSoldOut[_id]);
         _;
     }
@@ -64,9 +88,8 @@ contract MarketPlace {
         weth = IWETH(_weth);
     }
 
-   // Related to chainlink functions and frrontend interactions
-    function chainlinkfunctionData() public{
-    }
+    // Related to chainlink functions and frrontend interactions
+    function chainlinkfunctionData() public {}
 
     // Function to map an email to an steps covered
     // **IMP - THIS FUNCTION WILL BE CALLED WHEN USER FETCHES HIS API DATA.
@@ -79,27 +102,40 @@ contract MarketPlace {
 
     // Function to map an email to an Ethereum address
     // **IMP - THIS FUNCTION WILL BE CALLED AFTER USER HITS THE CONNECT WALLET BUTTON-----//
-    function mapEmailToAddress(string calldata _email, address _account) external {
+    function mapEmailToAddress(
+        string calldata _email,
+        address _account
+    ) external {
         require(_account != address(0), "Invalid address");
         bytes32 hashed = _stringToHash(_email);
 
-        require(s_emailToAddress[hashed]==address(0),"Email already linked with an account");
+        require(
+            s_emailToAddress[hashed] == address(0),
+            "Email already linked with an account"
+        );
         s_emailToAddress[hashed] = _account;
         emit EmailToAddressMapped(hashed, _account);
     }
 
-    function _stringToHash(string memory _string) internal pure returns(bytes32){
+    function _stringToHash(
+        string memory _string
+    ) internal pure returns (bytes32) {
         return keccak256(abi.encode(_string));
     }
 
     // **IMP - WHEN USER PURCHASES A SHOE THIS FUNCTION WILL BE CALLED.
-    function linkAddressToSteps(string calldata _email, address _account) public {
+    function linkAddressToSteps(
+        string calldata _email,
+        address _account
+    ) public {
         bytes32 hashed = _stringToHash(_email);
         require(s_emailToAddress[hashed] == _account, "Invalid Data");
-        s_stepsByUserAtMoment[_account][block.timestamp]=s_emailToSteps[hashed];
+        s_stepsByUserAtMoment[_account][block.timestamp] = s_emailToSteps[
+            hashed
+        ];
     }
 
-   //Called By User
+    //Called By User
     function list(
         uint256 _id,
         string memory _name,
@@ -121,51 +157,74 @@ contract MarketPlace {
             msg.sender
         );
 
-        uint platformFee = (_cost*10)/100; // 10% percent of fee will be transfered to Pool.sol
-        require(msg.value>=platformFee,"Please enter valid amount");
+        uint platformFee = (_cost * 10) / 100; // 10% percent of fee will be transfered to Pool.sol
+        require(msg.value >= platformFee, "Please enter valid amount");
 
         s_shoes[_id] = shoe;
-        emit List(_id, _name, _brand, _image, _cost, _RB_Factor, _quantity, msg.sender);
+        emit List(
+            _id,
+            _name,
+            _brand,
+            _image,
+            _cost,
+            _RB_Factor,
+            _quantity,
+            msg.sender
+        );
 
         weth.deposit{value: platformFee}();
         require(weth.transfer(address(pool), platformFee));
     }
 
     //Called By User
-    function buy(uint256 _id) public payable shoeValidity(_id){
-
+    function buy(uint256 _id) public payable shoeValidity(_id) {
         Shoe memory shoe = s_shoes[_id];
         require(msg.value >= shoe.cost);
         require(shoe.quantity > 0);
 
-    // This Order parameter will track if user wants to purchase more than 1 shoe.
+        // This Order parameter will track if user wants to purchase more than 1 shoe.
         Order memory order = Order(block.timestamp, shoe);
         s_orderCount[msg.sender]++; // <-- Order ID
         s_orders[msg.sender][s_orderCount[msg.sender]] = order;
 
         s_shoes[_id].quantity = shoe.quantity - 1;
-        s_hasUserPurchased_A_Shoe[msg.sender][_id]= true;
-        s_isSoldOut[_id]= true;
-        emit Buy(msg.sender, s_orderCount[msg.sender], shoe.id, shoe.RB_Factor, true);
+        s_hasUserPurchased_A_Shoe[msg.sender][_id] = true;
+        s_isSoldOut[_id] = true;
+        emit Buy(
+            msg.sender,
+            s_orderCount[msg.sender],
+            shoe.id,
+            shoe.RB_Factor,
+            true
+        );
 
-        (bool success,) = shoe.lister.call{value: msg.value}(""); // Pay to lister of shoe
+        (bool success, ) = shoe.lister.call{value: msg.value}(""); // Pay to lister of shoe
         require(success);
     }
 
     // Ignore this for now
     // If user has more than 1 shoe, he can choose which shoe he want to earn reward with.
-    function selectShoe(uint256 _shoeId) public view returns(Shoe memory){
-        require(s_hasUserPurchased_A_Shoe[msg.sender][_shoeId],"You does not own this shoe");
+    function selectShoe(uint256 _shoeId) public view returns (Shoe memory) {
+        require(
+            s_hasUserPurchased_A_Shoe[msg.sender][_shoeId],
+            "You does not own this shoe"
+        );
         Shoe memory shoe = s_shoes[_shoeId];
         return shoe;
     }
 
-    function hasPurchasedShoe(address _account, uint256 _shoeId) public view returns(bool){
+    function hasPurchasedShoe(
+        address _account,
+        uint256 _shoeId
+    ) public view returns (bool) {
         return s_hasUserPurchased_A_Shoe[_account][_shoeId];
     }
 
     // Function to get the purchase timestamp for a specific order
-    function getOrderTime(address _account, uint256 _orderId) public view returns (uint256) {
+    function getOrderTime(
+        address _account,
+        uint256 _orderId
+    ) public view returns (uint256) {
         return s_orders[_account][_orderId].time;
     }
 
