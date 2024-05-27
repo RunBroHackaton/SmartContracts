@@ -12,4 +12,5 @@ docs/
 
 # Dotenv file
 .env
+.env.local
 broadcast/
