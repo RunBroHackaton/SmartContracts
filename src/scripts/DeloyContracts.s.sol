@@ -4,7 +4,7 @@ pragma solidity ^0.8.18;
 import {Script, console} from "forge-std/Script.sol";
 import {RunBroToken} from "../RunBroToken.sol";
 import {PoolModel2} from "../PoolModels/PoolModel2.sol";
-import {Marketplace} from "../Marketplace.sol";
+import {MarketPlace} from "../Marketplace.sol";
 import {Reward} from "../RewardModels/RewardModel3.sol";
 
 contract DeployContracts is Script {
@@ -21,7 +21,7 @@ contract DeployContracts is Script {
         vm.prank(owner);
         RunBroToken rbToken = new RunBroToken(initialSupply);
         PoolModel2 pool = new PoolModel2(wethAddress, address(rbToken));
-        rbToken.approve(address(pool), inital_rbTokens);
+        rbToken.approve(address(pool), initial_rbTokens);
         pool.setIntialBalanceOfpool(initial_rbTokens);
         //-------------------------------------------------------------------------------------------
         MarketPlace marketPlace = new MarketPlace(
