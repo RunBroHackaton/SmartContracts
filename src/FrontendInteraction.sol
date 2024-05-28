@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+/*@dev
+ The purpose of this contract to bring all the external functions in different contracts at one place,
+ so frontend only need to interact with this contract instead of 4 diff contracts.
+*/
+
 interface IReward {
     function swaprbToken() external;
 

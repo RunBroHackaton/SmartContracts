@@ -6,16 +6,18 @@ import {RunBroToken} from "../RunBroToken.sol";
 import {PoolModel2} from "../PoolModels/PoolModel2.sol";
 import {MarketPlace} from "../Marketplace.sol";
 import {Reward} from "../RewardModels/RewardModel3.sol";
+import {Interaction} from "../FrontendInteraction.sol";
 
 contract DeployContracts is Script {
-    address public constant wethAddress = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9; // On Sepolia
+    // address public constant wethAddress = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9; // On Sepolia
+    address public constant wethAddress = 0x52eF3d68BaB452a294342DC3e5f464d7f610f72E; // On Amoy
     uint256 public initialSupply = 1000000 * 10 ** 18;
     uint256 public initial_rbTokens = 10000 * 10 ** 18;
 
     address public seller = address(1);
     address public buyer = address(2);
 
-    function run() external {
+    function run() external returns(Interaction){
         address owner = msg.sender;
         
         // Ensure owner has enough ETH to deploy contracts
@@ -50,13 +52,16 @@ contract DeployContracts is Script {
         endGas = gasleft();
         console.log("Reward Deployment Gas Used:", startGas - endGas);
 
-        vm.stopBroadcast();
+        Interaction interaction = new Interaction(address(reward), address(pool), address(rbToken), address(marketPlace));
 
+        vm.stopBroadcast();
+        
         console.log("RB Token Address", address(rbToken));
         console.log("Pool Address", address(pool));
         console.log("Marketplace Address", address(marketPlace));
         console.log("Reward Address", address(reward));
-        console.log("OWNER", owner);
+        console.log("Interaction Address", address(interaction));
+        return interaction;
     }
 }
 
