@@ -46,7 +46,7 @@ contract PoolModel2 {
         s_rbReserve = _res1;  
     }
 
-    function setIntialBalanceOfpool(uint256 _amount) public onlyOwner {
+    function setIntialBalanceOfpool(uint256 _amount) public {
         i_rbToken.transferFrom(msg.sender, address(this), _amount);
         s_rbReserve = i_rbToken.balanceOf(address(this));
         s_wethReserve = i_wethToken.balanceOf(address(this));
@@ -81,7 +81,7 @@ contract PoolModel2 {
     // This function will be used to mint/add rbTokens to the pool, as per pool condition
     // if the ratio of added liquidity of rbTokens and wethTokens is less than ratio of both reserves by TOLERANCE_MARGIN
     // it will add liquidity other wise not.
-    function addLiquidity() public onlyOwner {
+    function addLiquidity() public {
         uint256 amt_toMint= _amountOfRBTokentoMint();
         uint256 balanceOfWETH = i_wethToken.balanceOf(address(this));
 

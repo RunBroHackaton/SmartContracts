@@ -17,7 +17,7 @@ contract DeployContracts is Script {
     address public seller = address(1);
     address public buyer = address(2);
 
-    function run() external returns(Interaction){
+    function run() external {
         address owner = msg.sender;
         
         // Ensure owner has enough ETH to deploy contracts
@@ -52,7 +52,7 @@ contract DeployContracts is Script {
         endGas = gasleft();
         console.log("Reward Deployment Gas Used:", startGas - endGas);
 
-        Interaction interaction = new Interaction(address(reward), address(pool), address(rbToken), address(marketPlace));
+        // Interaction interaction = new Interaction(address(reward), address(pool), address(rbToken), address(marketPlace));
 
         vm.stopBroadcast();
         
@@ -60,8 +60,8 @@ contract DeployContracts is Script {
         console.log("Pool Address", address(pool));
         console.log("Marketplace Address", address(marketPlace));
         console.log("Reward Address", address(reward));
-        console.log("Interaction Address", address(interaction));
-        return interaction;
+        // console.log("Interaction Address", address(interaction));
+      
     }
 }
 

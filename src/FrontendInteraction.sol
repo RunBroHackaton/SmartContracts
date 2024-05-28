@@ -61,9 +61,48 @@ contract Interaction {
         i_runbro = IRunBro(_runbro);
         i_marketplace =IMarketPlace(_marketplace);
     }
+//-----------------------------MarketaPlace functions--------------------------------------------
+//     function list(uint256 _id, string memory _name, string memory _brand, string memory _image, uint256 _cost, uint256 _RB_Factor, uint256 _quantity) public{
+//         i_marketplace.list(_id, _name, _brand, _image, _cost, _RB_Factor, _quantity);
+//     }
 
-    function list(uint256 _id, string memory _name, string memory _brand, string memory _image, uint256 _cost, uint256 _RB_Factor, uint256 _quantity) public{
-        i_marketplace.list(_id, _name, _brand, _image, _cost, _RB_Factor, _quantity);
-    }
-    // Similarly other functions.
+//     function buy(uint256 _id) public{
+//         i_marketplace.buy(_id);
+//     }   
+
+//     function mapEmailToAddress(string calldata _email, address _account) public {
+//         i_marketplace.mapEmailToAddress(_email, _account);
+//     }
+
+//     function mapEmailToSteps(string calldata _email, uint256 _steps) public {
+//         i_marketplace.mapEmailToSteps(_email, _steps);
+//     }
+
+//     function linkAddressToSteps(string calldata _email, address _account) public {
+//         i_marketplace.linkAddressToSteps(_email, _account);
+//     }
+// //---------------------------Pool functions-------------------------------------------
+//    // called by chainlink automation every 24 hour.
+
+//     function setInitailPoolBalance() public {
+//         i_pool.setIntialBalanceOfpool();
+//     }
+
+//     function addLiquidity() public {
+//         i_pool.addLiquidity();
+//     }
+
+// //--------------------------Reward Functions------------------------------------------
+
+//     function swap() public {
+//         i_reward.swaprbToken();
+//     }
+
+//     function claimReward(uint256 _shoeId) public{
+//         i_reward.claimReward();
+//     }
+
+//     function calculateReward( address _account, uint256 _shoeId) external returns(uint256);
+
+
 }
