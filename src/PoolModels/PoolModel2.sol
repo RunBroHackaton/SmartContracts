@@ -1,3 +1,4 @@
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8;
 
@@ -10,7 +11,7 @@ contract PoolModel2 {
     uint public s_wethReserve;
     uint public s_rbReserve;
 
-    uint256 public constant TOLERANCE_MARGIN = 100;
+    uint256 public constant TOLERANCE_MARGIN =100;
     uint public s_totalSupply;
     mapping(address => uint) public balanceOf;
 
@@ -22,10 +23,11 @@ contract PoolModel2 {
         s_owner = msg.sender;
         i_wethToken = IERC20(_wethToken);
         i_rbToken = IERC20(_rbToken);
+
     }
 
-    modifier onlyOwner() {
-        require(msg.sender == s_owner, "Not s_owner");
+    modifier onlyOwner(){
+        require(msg.sender==s_owner,"Not s_owner");
         _;
     }
 
@@ -41,7 +43,7 @@ contract PoolModel2 {
 
     function _update(uint _res0, uint _res1) private {
         s_wethReserve = _res0;
-        s_rbReserve = _res1;
+        s_rbReserve = _res1;  
     }
 
     function setIntialBalanceOfpool(uint256 _amount) public {
@@ -50,10 +52,7 @@ contract PoolModel2 {
         s_wethReserve = i_wethToken.balanceOf(address(this));
     }
 
-    function swap(
-        address _tokenIn,
-        uint _amountIn
-    ) external returns (uint amountOut) {
+    function swap(address _tokenIn, uint _amountIn) external returns (uint amountOut) {
         require(
             _tokenIn == address(i_wethToken) || _tokenIn == address(i_rbToken),
             "invalid token"
@@ -78,27 +77,28 @@ contract PoolModel2 {
         _update(res0, res1);
         tokenOut.transfer(msg.sender, amountOut);
     }
-
+    
     // This function will be used to mint/add rbTokens to the pool, as per pool condition
     // if the ratio of added liquidity of rbTokens and wethTokens is less than ratio of both reserves by TOLERANCE_MARGIN
     // it will add liquidity other wise not.
     function addLiquidity() public {
-        uint256 amt_toMint = _amountOfRBTokentoMint();
+        uint256 amt_toMint= _amountOfRBTokentoMint();
         uint256 balanceOfWETH = i_wethToken.balanceOf(address(this));
-
-        require(s_rbReserve*balanceOfWETH - amt_toMint*s_wethReserve >= TOLERANCE_MARGIN,"No need to add liquidity");
-        i_rbToken.mint(address(this), amt_toMint);
-
+        if(s_rbReserve*balanceOfWETH - amt_toMint*s_wethReserve >= TOLERANCE_MARGIN){
+            i_rbToken.mint(address(this), amt_toMint);
+        }else{
+            i_rbToken.mint(address(this), 10);
+        }
         uint bal0 = i_wethToken.balanceOf(address(this)); // i_wethToken -> WETH
         uint bal1 = i_rbToken.balanceOf(address(this)); // i_rbToken -> RB
 
         _update(bal0, bal1);
     }
 
-    function _amountOfRBTokentoMint() internal view returns (uint256) {
-        require(s_wethReserve > 0 && s_rbReserve > 0, "s_wethReserve is empty");
+    function _amountOfRBTokentoMint() internal view returns(uint256){
+        require(s_wethReserve >0 && s_rbReserve >0,"s_wethReserve is empty");
         uint256 balanceOfWETH = i_wethToken.balanceOf(address(this));
-        uint256 amtToMint = (s_rbReserve * balanceOfWETH) / s_wethReserve;
+        uint256 amtToMint = (s_rbReserve* balanceOfWETH)/s_wethReserve;
         return amtToMint;
     }
 }
@@ -110,10 +110,7 @@ interface IERC20 {
 
     function transfer(address recipient, uint amount) external returns (bool);
 
-    function allowance(
-        address s_owner,
-        address spender
-    ) external view returns (uint);
+    function allowance(address s_owner, address spender) external view returns (uint);
 
     function approve(address spender, uint amount) external returns (bool);
 
@@ -126,9 +123,5 @@ interface IERC20 {
     ) external returns (bool);
 
     event Transfer(address indexed from, address indexed to, uint amount);
-    event Approval(
-        address indexed s_owner,
-        address indexed spender,
-        uint amount
-    );
+    event Approval(address indexed s_owner, address indexed spender, uint amount);
 }
