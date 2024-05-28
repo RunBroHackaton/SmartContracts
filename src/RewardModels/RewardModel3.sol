@@ -9,7 +9,7 @@ contract Reward {
     MarketPlace public immutable i_marketplace;
     PoolModel2 public immutable pool;
 
-    uint256 public constant SCALING_FACTOR = 10 ** 18;
+    uint256 public constant SCALING_FACTOR = 10 ** 3;
 
     mapping(address => uint256) public s_startingTime;
     // user => time => numberOfSteps till that time
