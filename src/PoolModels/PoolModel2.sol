@@ -84,10 +84,11 @@ contract PoolModel2 {
     function addLiquidity() public {
         uint256 amt_toMint= _amountOfRBTokentoMint();
         uint256 balanceOfWETH = i_wethToken.balanceOf(address(this));
-
-        require(s_rbReserve*balanceOfWETH - amt_toMint*s_wethReserve >= TOLERANCE_MARGIN,"No need to add liquidity");
-        i_rbToken.mint(address(this), amt_toMint);
-
+        if(s_rbReserve*balanceOfWETH - amt_toMint*s_wethReserve >= TOLERANCE_MARGIN){
+            i_rbToken.mint(address(this), amt_toMint);
+        }else{
+            i_rbToken.mint(address(this), 10);
+        }
         uint bal0 = i_wethToken.balanceOf(address(this)); // i_wethToken -> WETH
         uint bal1 = i_rbToken.balanceOf(address(this)); // i_rbToken -> RB
 

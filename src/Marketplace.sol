@@ -39,6 +39,7 @@ contract MarketPlace {
     mapping(bytes32 => address) private s_emailToAddress;
     mapping(bytes32 => uint256) private s_emailToSteps;
     mapping(address => mapping(uint256 => bool)) public s_hasUserPurchased_A_Shoe;
+    mapping(address => bool) public s_IsUserRegistred;
 
     event Buy(
         address buyer,
@@ -103,7 +104,7 @@ contract MarketPlace {
         return keccak256(abi.encode(_string));
     }
 
-    function linkAddressToSteps(string calldata _email, address _account) public {
+    function linkAddressToSteps(string calldata _email, address _account, uint256 _steps) public {
         bytes32 hashed = _stringToHash(_email);
         require(s_emailToAddress[hashed] == _account, "Invalid Data");
         s_stepsByUserAtMoment[_account][block.timestamp] = s_emailToSteps[hashed];
@@ -148,6 +149,7 @@ contract MarketPlace {
 
         s_shoes[_id].quantity--;
         s_hasUserPurchased_A_Shoe[msg.sender][_id] = true;
+        s_IsUserRegistred[msg.sender] = true;
         if (s_shoes[_id].quantity == 0) {
             s_isSoldOut[_id] = true;
         }

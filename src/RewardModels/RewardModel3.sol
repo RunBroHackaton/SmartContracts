@@ -31,22 +31,23 @@ contract Reward {
     }
 
     //**IMP - Called By User
-    function claimReward(uint256 _shoeId) public {
+    function claimReward(uint256 _shoeId, uint256 _time, uint256 _steps) public {
         require(
             i_marketplace.hasPurchasedShoe(msg.sender, _shoeId),
             "You are not eligible"
         );
         // more checks
 
-        uint256 reward = calculateReward(msg.sender, _shoeId);
-        _update_startingTime(msg.sender);
+        uint256 reward = calculateReward(msg.sender, _shoeId, _steps);
+        _update_startingTime(msg.sender, _time);
         i_rbToken.transfer(msg.sender, reward);
     }
 
     //**IMP - Called By User
     function calculateReward(
         address _account,
-        uint256 _shoeId
+        uint256 _shoeId,
+        uint256 _steps
     ) public returns (uint256) {
         uint256 rewardOfUser = ((calculateSharesOfUser(_account, _shoeId) *
             pool.s_rbReserve()) * i_marketplace.getShoeRB_Factor(_shoeId)) / // To neutralize the scaling factor we need to divide by 1e18.
@@ -54,8 +55,8 @@ contract Reward {
         return rewardOfUser;
     }
 
-    function _update_startingTime(address _account) internal {
-        s_startingTime[_account] = block.timestamp;
+    function _update_startingTime(address _account, uint256 _time) internal {
+        s_startingTime[_account] = _time;
     }
 
     function calculateSharesOfUser(
