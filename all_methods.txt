@@ -21,4 +21,6 @@
   "s_stepsByUserAtMoment(address,uint256)": "febacd70",
   "selectShoe(uint256)": "6b855ef4",
   "weth()": "3fc8cef3"
+  "QK6VI6P68XVQ44T59V8TRRB2QMKPRDC5MF - sepolia"
+  "7X9MHRK12U1NTVNM6BXC65AWT9CX7NNZZE" - amoy"
 }

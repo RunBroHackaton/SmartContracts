@@ -25,9 +25,9 @@ interface IWETH {
 }
 
 contract DeployContracts is Script {
-    // address public constant wethAddress = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9; // On Sepolia
-    address public constant wethAddress =
-        0x52eF3d68BaB452a294342DC3e5f464d7f610f72E; // On Amoy
+    address public constant wethAddress = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9; // On Sepolia
+    // address public constant wethAddress =
+    //     0x52eF3d68BaB452a294342DC3e5f464d7f610f72E; // On Amoy
     uint256 public initialSupply = 1000000 * 10 ** 18;
     uint256 public initial_rbTokens_inPool = 10000 * 10 ** 18;
     uint256 public initial_weth_inPool = 10000 * 10 ** 18;
@@ -35,11 +35,11 @@ contract DeployContracts is Script {
     address public seller = address(1);
     address public buyer = address(2);
 
-    function run() external {
-        address owner = msg.sender;
-        vm.deal(owner, 100000 ether);
-        console.log("OWNER'S BALANCE IN ETH", owner.balance);
+    address public owner;
 
+    function run() external {
+        // console.log("OWNER'S BALANCE IN ETH", owner.balance);
+        owner = msg.sender;
         vm.startBroadcast(owner);
 
         RunBroToken rbToken = new RunBroToken(initialSupply);

@@ -39,6 +39,7 @@ contract MarketPlace {
     mapping(bytes32 => uint256) private s_emailToSteps;
     mapping(address => mapping(uint256 => bool)) public s_hasUserPurchased_A_Shoe;
     mapping(address => bool) public s_IsUserRegistred;
+
     mapping(address => bool) public s_IsSellerRegistred;
     mapping(address => uint256) public s_SellerKYC;
 
@@ -131,7 +132,7 @@ contract MarketPlace {
     function SellerRegisteration(uint256 _creditCardNumber) public {
         require(s_IsSellerRegistred[msg.sender]==false,"Seller Already registered");
 
-        s_SellerKYC[msg.sender]= _creditCardNumber;
+        s_SellerKYC[msg.sender] = _creditCardNumber;
         s_IsSellerRegistred[msg.sender] = true;
     }
 
@@ -147,7 +148,7 @@ contract MarketPlace {
         uint256 _RB_Factor,
         uint256 _quantity
     ) public payable {
-        require(s_IsSellerRegistred[msg.sender] =true, "Not registered");
+        require(s_IsSellerRegistred[msg.sender] ==true, "Not registered");
         // Platform Fee is 10% of _cost and 10% of _RB_Factor.
         require(msg.value >= (_cost * 10)*(_RB_Factor*10) / 10000, "Insufficient fee");
 
@@ -196,11 +197,14 @@ contract MarketPlace {
         require(success, "Payment to lister failed");
     }
 
-    /** 
-    * @dev
-    * IGNORE-- this function for now
-    * When User has two more than one shoe to choose.
-    */
+    //------------------------------VIEW FUNCTIONS-----------------------------------------
+    //-------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------
+
+    function getListedShoeById(uint256 _id) public view returns (Shoe memory){
+        Shoe memory shoe = s_shoes[_id];
+        return shoe;
+    }
 
     function getTotalNumberOfListedShoe() public view returns (uint256){
         return s_shoeCount;
@@ -210,6 +214,11 @@ contract MarketPlace {
         return s_SellerKYC[_account];
     }
 
+    /**
+    * @dev
+    * IGNORE-- this function for now
+    * When User has two more than one shoe to choose.
+    */
     function selectShoe(uint256 _shoeId) public view returns (Shoe memory) {
         require(s_hasUserPurchased_A_Shoe[msg.sender][_shoeId], "You do not own this shoe");
         return s_shoes[_shoeId];
