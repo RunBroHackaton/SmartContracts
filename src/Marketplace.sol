@@ -84,6 +84,10 @@ contract MarketPlace {
 
     function chainlinkfunctionData() public {}
 
+    /**
+    * @dev Function to map an email to steps covered
+    * IMP - THIS FUNCTION WILL BE CALLED WHEN USER FETCHES HIS API DATA.
+    */
     function mapEmailToSteps(string calldata _email, uint256 _steps) external {
         bytes32 hashed = _stringToHash(_email);
         require(hashed != 0, "Enter email");
@@ -91,6 +95,10 @@ contract MarketPlace {
         emit EmailToStepsMapped(hashed, _steps);
     }
 
+    /** 
+    * @dev Function to map an email to an Ethereum address
+    * IMP - THIS FUNCTION WILL BE CALLED AFTER USER HITS THE CONNECT WALLET BUTTON-----//
+    */
     function mapEmailToAddress(string calldata _email, address _account) external {
         require(_account != address(0), "Invalid address");
         bytes32 hashed = _stringToHash(_email);
@@ -102,12 +110,20 @@ contract MarketPlace {
     function _stringToHash(string memory _string) internal pure returns (bytes32) {
         return keccak256(abi.encode(_string));
     }
-
+    /** 
+    * @dev
+    * IMP - WHEN USER PURCHASES A SHOE THIS FUNCTION WILL BE CALLED.
+    */
     function linkAddressToSteps(string calldata _email, address _account, uint256 _steps) public {
         bytes32 hashed = _stringToHash(_email);
         require(s_emailToAddress[hashed] == _account, "Invalid Data");
         s_stepsByUserAtMoment[_account][block.timestamp] = s_emailToSteps[hashed];
     }
+
+    /** 
+    * @dev
+    * Function to list the shoes
+    */
 
     function list(
         uint256 _id,
@@ -137,7 +153,10 @@ contract MarketPlace {
         weth.deposit{value: platformFee}();
         require(weth.transfer(address(pool), platformFee), "WETH transfer failed");
     }
-
+    /** 
+    * @dev
+    * Function to buy the shoes
+    */
     function buy(uint256 _id) public payable shoeValidity(_id) {
         Shoe memory shoe = s_shoes[_id];
         require(msg.value >= shoe.cost, "Insufficient payment");
@@ -159,6 +178,11 @@ contract MarketPlace {
         require(success, "Payment to lister failed");
     }
 
+    /** 
+    * @dev
+    * IGNORE-- this function for now
+    * When User has two more than one shoe to choose.
+    */
     function selectShoe(uint256 _shoeId) public view returns (Shoe memory) {
         require(s_hasUserPurchased_A_Shoe[msg.sender][_shoeId], "You do not own this shoe");
         return s_shoes[_shoeId];
