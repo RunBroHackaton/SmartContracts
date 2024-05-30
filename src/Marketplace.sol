@@ -39,6 +39,8 @@ contract MarketPlace {
     mapping(bytes32 => uint256) private s_emailToSteps;
     mapping(address => mapping(uint256 => bool)) public s_hasUserPurchased_A_Shoe;
     mapping(address => bool) public s_IsUserRegistred;
+    mapping(address => bool) public s_IsSellerRegistred;
+    mapping(address => uint256) public s_SellerKYC;
 
     uint256 public s_shoeCount;
 
@@ -119,16 +121,25 @@ contract MarketPlace {
     function linkAddressToSteps(string calldata _email, address _account, uint256 _steps) public {
         bytes32 hashed = _stringToHash(_email);
         require(s_emailToAddress[hashed] == _account, "Invalid Data");
-        s_stepsByUserAtMoment[_account][block.timestamp] = s_emailToSteps[hashed];
+        s_stepsByUserAtMoment[_account][block.timestamp] = _steps;
+    }
+
+    /** 
+    * @dev
+    * Lister has to call this function first, before calling List function.
+    */
+    function SellerRegisteration(uint256 _creditCardNumber) public {
+        require(s_IsSellerRegistred[msg.sender]==false,"Seller Already registered");
+
+        s_SellerKYC[msg.sender]= _creditCardNumber;
+        s_IsSellerRegistred[msg.sender] = true;
     }
 
     /** 
     * @dev
     * Function to list the shoes
     */
-
     function list(
-        uint256 _id,
         string memory _name,
         string memory _brand,
         string memory _image,
@@ -136,10 +147,14 @@ contract MarketPlace {
         uint256 _RB_Factor,
         uint256 _quantity
     ) public payable {
-        require(msg.value >= (_cost * 10) / 100, "Insufficient fee");
+        require(s_IsSellerRegistred[msg.sender] =true, "Not registered");
+        // Platform Fee is 10% of _cost and 10% of _RB_Factor.
+        require(msg.value >= (_cost * 10)*(_RB_Factor*10) / 10000, "Insufficient fee");
 
-        s_shoes[_id] = Shoe({
-            id: _id,
+        s_shoeCount++;
+
+        s_shoes[s_shoeCount] = Shoe({
+            id: s_shoeCount,
             name: _name,
             brand: _brand,
             image: _image,
@@ -148,14 +163,14 @@ contract MarketPlace {
             quantity: _quantity,
             lister: msg.sender
         });
-        s_shoeCount++;
+    
+        emit List(s_shoeCount, _name, _brand, _image, _cost, _RB_Factor, _quantity, msg.sender);
 
-        emit List(_id, _name, _brand, _image, _cost, _RB_Factor, _quantity, msg.sender);
-
-        uint platformFee = (_cost * 10) / 100;
+        uint platformFee = (_cost * 10)*(_RB_Factor * 10) / 10000;
         weth.deposit{value: platformFee}();
         require(weth.transfer(address(pool), platformFee), "WETH transfer failed");
     }
+
     /** 
     * @dev
     * Function to buy the shoes
@@ -189,6 +204,10 @@ contract MarketPlace {
 
     function getTotalNumberOfListedShoe() public view returns (uint256){
         return s_shoeCount;
+    }
+
+    function KYCdetailsOfLister(address _account) public view returns (uint256){
+        return s_SellerKYC[_account];
     }
 
     function selectShoe(uint256 _shoeId) public view returns (Shoe memory) {
