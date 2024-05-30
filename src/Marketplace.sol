@@ -40,6 +40,8 @@ contract MarketPlace {
     mapping(address => mapping(uint256 => bool)) public s_hasUserPurchased_A_Shoe;
     mapping(address => bool) public s_IsUserRegistred;
 
+    uint256 public s_shoeCount;
+
     event Buy(
         address buyer,
         uint256 orderId,
@@ -146,6 +148,7 @@ contract MarketPlace {
             quantity: _quantity,
             lister: msg.sender
         });
+        s_shoeCount++;
 
         emit List(_id, _name, _brand, _image, _cost, _RB_Factor, _quantity, msg.sender);
 
@@ -183,6 +186,11 @@ contract MarketPlace {
     * IGNORE-- this function for now
     * When User has two more than one shoe to choose.
     */
+
+    function getTotalNumberOfListedShoe() public view returns (uint256){
+        return s_shoeCount;
+    }
+
     function selectShoe(uint256 _shoeId) public view returns (Shoe memory) {
         require(s_hasUserPurchased_A_Shoe[msg.sender][_shoeId], "You do not own this shoe");
         return s_shoes[_shoeId];
