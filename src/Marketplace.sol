@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
-
 import {PoolModel2} from "./PoolModels/PoolModel2.sol";
 
 interface IWETH {
