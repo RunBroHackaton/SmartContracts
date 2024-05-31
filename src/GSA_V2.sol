@@ -5,7 +5,7 @@ import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_
 import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/libraries/FunctionsRequest.sol";
 
-contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
+contract GSA_V2 is FunctionsClient, ConfirmedOwner {
     using FunctionsRequest for FunctionsRequest.Request;
 
     bytes32 public s_lastRequestId;
@@ -45,35 +45,27 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     bytes32 donId =
         0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000;
 
+    string public googleFitSourceWithAuthToken;
     // CUSTOM PARAMS - END
 
-    constructor() FunctionsClient(router) ConfirmedOwner(msg.sender) {}
+    constructor() FunctionsClient(router) ConfirmedOwner(msg.sender) {
+    }
 
     function upDateSubscriptionId(uint64 _id) public {
         subscriptionId = _id;
     }
 
+    // function readTokenSourceCode(string memory _googleFitSourceWithAuthToken) public {
+    //     googleFitSourceWithAuthToken = _googleFitSourceWithAuthToken;
+    // }
+
     /**
      * Example JavaScript to interact with Google Fit API
     // @dev Note: This assumes an access token is available and passed to the script
-     * @param accessToken: should coincide with JavaScript on front end
+    // accessToken: should coincide with JavaScript on front end
      */
-
-
-    function sendRequest(
-        string memory accessToken
-    ) external onlyOwner returns (bytes32 requestId) {
-        string memory sourceWithToken = string(
-            abi.encodePacked(
-                "const accessToken = '",
-                accessToken,
-                "'; const url = `https://www.googleapis.com/fitness/v1/users/me/dataSources?access_token=",
-                accessToken,
-                "`; const newRequest = Functions.makeHttpRequest({ url, headers: { 'Authorization': `Bearer ",
-                accessToken,
-                "` } }); const newResponse = await newRequest; if (newResponse.error) { throw Error(`Error fetching fitness data`);} return Functions.encodeString(JSON.stringify(newResponse.data));"
-            )
-        );
+    function sendRequest(string memory _googleFitSourceWithAuthToken) external returns (bytes32 requestId) {
+        string memory sourceWithToken = _googleFitSourceWithAuthToken;
 
         FunctionsRequest.Request memory req;
         req.initializeRequestForInlineJavaScript(sourceWithToken);

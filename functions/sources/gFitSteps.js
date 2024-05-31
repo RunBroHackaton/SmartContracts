@@ -1,4 +1,3 @@
-// make HTTP request
 const url = 'https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate';
 
 const requestBody = {
@@ -13,25 +12,27 @@ const requestBody = {
   },
   "startTimeMillis": 1716242400000,
   "endTimeMillis": 1716882269739
-}
+};
 
-console.log(HTTP POST Request to ${url} with body: ${JSON.stringify(requestBody)})
+console.log(`HTTP POST Request to ${url} with body: ${JSON.stringify(requestBody)}`);
 
-const stepsRequest = Functions.makeHttpRequest({
+const stepsRequest = await Functions.makeHttpRequest({
   url: url,
   method: "POST",
   headers: {
-    "Authorization": Bearer ${accessToken},
+    "Authorization": `Bearer ${accessToken}`,
     "Content-Type": "application/json"
   },
-  data: JSON.stringify(requestBody)
-})
+  data: requestBody
+});
 
 // Execute the API request
-const stepsResponse = await stepsRequest
-
-if (stepsResponse.error) {
-  throw Error("Request failed")
+let stepsResponse;
+try {
+  stepsResponse = await stepsRequest;
+} catch (error) {
+  console.error("Request failed:", error);
+  throw new Error("Request failed");
 }
 
 // Parse the response and calculate total steps
@@ -43,6 +44,6 @@ const totalSteps = responseData.bucket.reduce((total, bucket) => {
   return total;
 }, 0);
 
-console.log("Total Steps:", totalSteps)
+console.log("Total Steps:", totalSteps);
 
-return Functions.encodeUint256(totalSteps) 
+return Functions.encodeUint256(totalSteps);
