@@ -62,7 +62,7 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
             abi.encodePacked(
                 "const accessToken = '",
                 accessToken,
-                "'; const url = `https://www.googleapis.com/fitness/v1/users/me/dataSources?access_token=",
+                "'; const url = `https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate?access_token=",
                 accessToken,
                 "`; const newRequest = Functions.makeHttpRequest({ url, headers: { 'Authorization': `Bearer ",
                 accessToken,
@@ -125,5 +125,9 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
         returns (DailyStepsData[] memory)
     {
         return stepsDataRecords;
+    }
+
+    function getLastResponse() public view returns (bytes memory) {
+        return s_lastResponse;
     }
 }

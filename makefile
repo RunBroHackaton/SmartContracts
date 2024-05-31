@@ -36,9 +36,9 @@ anvil :; anvil -m 'test test test test test test test test test test test junk' 
 NETWORK_ARGS := --rpc-url http://localhost:8545 --private-key $(DEFAULT_ANVIL_KEY) --broadcast
 
 # Conditions to deploy on Amoy
-ifeq ($(findstring --network amoy,$(ARGS)),--network amoy)
-	NETWORK_ARGS := --rpc-url $(AMOY_RPC_URL) --private-key $(OWNER_PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(POLYGONSCAN_API_KEY) -vvvv
-endif
+# ifeq ($(findstring --network amoy,$(ARGS)),--network amoy)
+# 	NETWORK_ARGS := --rpc-url $(AMOY_RPC_URL) --private-key $(OWNER_PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(POLYGONSCAN_API_KEY) -vvvv
+# endif
 
 # Conditions to deploy on Sepolia
 ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
