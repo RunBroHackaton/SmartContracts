@@ -40,11 +40,10 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
      *      https://docs.chain.link/chainlink-functions/supported-networks
      */
     address router = 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0;
-<<<<<<< HEAD
+
     uint64 subscriptionId = 2976; //Chainlink Functions Subscription ID
-=======
-    uint64 subscriptionId = 2934; //Chainlink Functions Subscription ID
->>>>>>> 0b9438989bcba994f824e57a7ac79fe7a0475ae1
+//     uint64 subscriptionId = 2934; //Chainlink Functions Subscription ID
+// >>>>>>> 0b9438989bcba994f824e57a7ac79fe7a0475ae1
     uint32 gasLimit = 300000; //Gas limit for callback tx do not change
     bytes32 donId =
         0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000;

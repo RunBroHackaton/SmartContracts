@@ -45,6 +45,9 @@ contract MarketPlace {
     mapping(address => uint256) public s_SellerKYC;
 
     uint256 public s_shoeCount;
+    uint[] public s_arrayOfIds;
+
+    mapping(address => uint[]) public s_numberOfShoeIdsOwnerByUser;
 
     event Buy(
         address buyer,
@@ -192,6 +195,8 @@ contract MarketPlace {
             s_isSoldOut[_id] = true;
         }
 
+        s_numberOfShoeIdsOwnerByUser[msg.sender].push(_id);
+
         emit Buy(msg.sender, s_orderCount[msg.sender], shoe.id, shoe.RB_Factor, true);
 
         (bool success, ) = shoe.lister.call{value: msg.value}("");
@@ -207,6 +212,10 @@ contract MarketPlace {
     //------------------------------VIEW FUNCTIONS-----------------------------------------
     //-------------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------------
+
+    function getShoeIdsOwnedByUser(address _user) public view returns (uint256[] memory) {
+        return s_numberOfShoeIdsOwnerByUser[_user];
+    }   
 
     function getListedShoeById(uint256 _id) public view returns (Shoe memory){
         Shoe memory shoe = s_shoes[_id];
@@ -226,10 +235,10 @@ contract MarketPlace {
     * IGNORE-- this function for now
     * When User has two more than one shoe to choose.
     */
-    function selectShoe(uint256 _shoeId) public view returns (Shoe memory) {
-        require(s_hasUserPurchased_A_Shoe[msg.sender][_shoeId], "You do not own this shoe");
-        return s_shoes[_shoeId];
-    }
+    // function selectShoe(uint256 _shoeId) public view returns (Shoe memory) {
+    //     require(s_hasUserPurchased_A_Shoe[msg.sender][_shoeId], "You do not own this shoe");
+    //     return s_shoes[_shoeId];
+    // }
 
     function hasPurchasedShoe(address _account, uint256 _shoeId) public view returns (bool) {
         return s_hasUserPurchased_A_Shoe[_account][_shoeId];
