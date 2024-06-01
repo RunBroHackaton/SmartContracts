@@ -7,7 +7,7 @@ import {RunBroToken} from "../RunBroToken.sol";
 import {PoolModel2} from "../PoolModels/PoolModel2.sol";
 import {MarketPlace} from "../Marketplace.sol";
 import {Reward} from "../RewardModels/RewardModel3.sol";
-import {Interaction} from "../FrontendInteraction.sol";
+// import {Interaction} from "../FrontendInteraction.sol";
 import {GetStepsAPI} from "../GetStepsAPI.sol";
 
 contract MarketPlaceTest is Test {

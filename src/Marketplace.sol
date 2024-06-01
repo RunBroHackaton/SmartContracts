@@ -171,7 +171,7 @@ contract MarketPlace {
     
         emit List(s_shoeCount, _name, _brand, _image, _cost, _RB_Factor, _quantity, msg.sender);
 
-        uint platformFee = (_cost * 10)/100 + (_RB_Factor * 10) / 100;
+        uint platformFee = (_cost * 10)/100 + (_RB_Factor * 10)/100;
         weth.deposit{value: platformFee}();
         require(weth.transfer(address(pool), platformFee), "WETH transfer failed");
     }

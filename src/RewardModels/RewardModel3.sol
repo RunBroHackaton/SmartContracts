@@ -30,6 +30,10 @@ contract Reward {
         pool.swap(address(i_rbToken), i_rbToken.balanceOf(msg.sender));
     }
 
+    function redeemSteps() public {
+        
+    }
+
     //**IMP - Called By User
     function claimReward(uint256 _shoeId, uint256 _time, uint256 _steps) public {
         require(
