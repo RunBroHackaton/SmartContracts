@@ -86,7 +86,7 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
      * @param accessToken: should coincide with JavaScript on front end
      * @dev _startTime and _endTime may be supplied from frontend side.
     */
-    function sendRequest(string memory accessToken, uint256 _startTime, uint256 _endtime) external onlyOwner returns (bytes32 requestId) {
+    function sendRequest(string memory accessToken) external onlyOwner returns (bytes32 requestId) {
         string memory sourceWithToken = string(
             abi.encodePacked(
                 "const accessToken = '",
@@ -133,8 +133,8 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
         userStepsData[requestIdToAddress[requestId]] = DailyStepsData({
             requester: requestIdToAddress[requestId],
             dataType: "daily_steps",
-            startTime: block.timestamp,
-            endTime: block.timestamp + 24 hours,
+            startTime: block.timestamp - 24 hours,
+            endTime: block.timestamp,
             stepsCount: stepsCount
         });
     // Approach 2
