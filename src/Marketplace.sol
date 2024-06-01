@@ -38,6 +38,7 @@ contract MarketPlace {
     mapping(bytes32 => address) private s_emailToAddress;
     mapping(bytes32 => uint256) private s_emailToSteps;
     mapping(address => mapping(uint256 => bool)) public s_hasUserPurchased_A_Shoe;
+    mapping(address => uint256) public s_userSelectedShoe;
     mapping(address => bool) public s_IsUserRegistred;
 
     mapping(address => bool) public s_IsSellerRegistred;
@@ -150,7 +151,7 @@ contract MarketPlace {
     ) public payable {
         require(s_IsSellerRegistred[msg.sender] ==true, "Not registered");
         // Platform Fee is 10% of _cost and 10% of _RB_Factor.
-        require(msg.value >= (_cost * 10)*(_RB_Factor*10) / 10000, "Insufficient fee");
+        require(msg.value >= (_cost * 10)/100 + (_RB_Factor*10)/ 100, "Insufficient fee");
 
         s_shoeCount++;
 
@@ -167,7 +168,7 @@ contract MarketPlace {
     
         emit List(s_shoeCount, _name, _brand, _image, _cost, _RB_Factor, _quantity, msg.sender);
 
-        uint platformFee = (_cost * 10)*(_RB_Factor * 10) / 10000;
+        uint platformFee = (_cost * 10)/100 + (_RB_Factor * 10) / 100;
         weth.deposit{value: platformFee}();
         require(weth.transfer(address(pool), platformFee), "WETH transfer failed");
     }
@@ -195,6 +196,12 @@ contract MarketPlace {
 
         (bool success, ) = shoe.lister.call{value: msg.value}("");
         require(success, "Payment to lister failed");
+    }
+
+    function selectShoe(uint256 _id) public returns(uint256){
+        require(s_hasUserPurchased_A_Shoe[msg.sender][_id], "You don't own this shoe");
+        s_userSelectedShoe[msg.sender]= _id;
+        return _id;
     }
 
     //------------------------------VIEW FUNCTIONS-----------------------------------------
