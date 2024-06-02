@@ -39,10 +39,6 @@ contract Reward {
         i_pool.swap(address(i_rbToken), i_rbToken.balanceOf(msg.sender));
     }
 
-    function redeemSteps() public {
-        
-    }
-
     /**
      * @dev This function will be called by user to retrive his steps.
      */ 

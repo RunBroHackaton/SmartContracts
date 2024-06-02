@@ -61,7 +61,7 @@ contract DeployContracts is Script {
         MarketPlace marketPlace = new MarketPlace(payable(address(pool)), payable(wethAddress));
         GetStepsAPI getstepsapi = new GetStepsAPI();
         Reward reward = new Reward(address(rbToken), address(marketPlace), address(pool), address(getstepsapi));
-
+        
         vm.stopBroadcast();
 
         console.log("RB Token Address", address(rbToken));

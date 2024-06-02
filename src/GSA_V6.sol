@@ -73,7 +73,7 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
      * @dev called by automation at 24 he daily
      * this will we passed dynamically at source code
      */ 
-    function getCurrentDayMidnightTimestamp() public view returns (uint256) {
+    function getCurrentDayMidnightTimestamp() public returns (uint256) {
         return _getMidnightTimestamp(block.timestamp);
     }
 
@@ -81,7 +81,7 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
      * @dev called by automation at 24 he daily
      * this will we passed dynamically at source code
      */ 
-    function getPreviousDayMidnightTimestamp() public view returns (uint256) {
+    function getPreviousDayMidnightTimestamp() public returns (uint256) {
         // Subtract 1 day (86400 seconds) from the current timestamp
         uint256 previousDayTimestamp = block.timestamp - 1 days;
         return _getMidnightTimestamp(previousDayTimestamp);
