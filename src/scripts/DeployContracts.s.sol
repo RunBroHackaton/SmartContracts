@@ -7,7 +7,7 @@ import {PoolModel2} from "../PoolModels/PoolModel2.sol";
 import {MarketPlace} from "../Marketplace.sol";
 import {Reward} from "../RewardModels/RewardModel3.sol";
 // import {Interaction} from "../FrontendInteraction.sol";
-import {GetStepsAPI} from "../GetStepsAPI.sol";
+import {GetStepsAPI} from "../GSA_V6.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -58,25 +58,18 @@ contract DeployContracts is Script {
             rbToken.balanceOf(address(pool))
         );
 
-        MarketPlace marketPlace = new MarketPlace(
-            payable(address(pool)),
-            payable(wethAddress)
-        );
-        Reward reward = new Reward(
-            address(rbToken),
-            address(marketPlace),
-            address(pool)
-        );
-
+        MarketPlace marketPlace = new MarketPlace(payable(address(pool)), payable(wethAddress));
         GetStepsAPI getstepsapi = new GetStepsAPI();
+        Reward reward = new Reward(address(rbToken), address(marketPlace), address(pool), address(getstepsapi));
 
         vm.stopBroadcast();
 
         console.log("RB Token Address", address(rbToken));
         console.log("Pool Address", address(pool));
         console.log("Marketplace Address", address(marketPlace));
+        console.log("getStepsApi Address", address(getstepsapi));
         console.log("Reward Address", address(reward));
-        console.log("getStepsApi", address(getstepsapi));
+
     }
 }
 

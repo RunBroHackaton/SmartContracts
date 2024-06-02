@@ -213,6 +213,10 @@ contract MarketPlace {
     //-------------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------------
 
+    function checkUserRegistraction(address _user) public view returns (bool) {
+        return s_IsUserRegistred[_user];
+    }
+
     function getShoeIdsOwnedByUser(address _user) public view returns (uint256[] memory) {
         return s_numberOfShoeIdsOwnerByUser[_user];
     }   
