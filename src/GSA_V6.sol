@@ -46,7 +46,9 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
         s_contractCreationTime = block.timestamp;
         s_distributionTimeStamp = getNext6PM(block.timestamp);
     }
-
+    /**
+    * @dev rewardDistributionTime is 6 PM Daily. 
+    */
     function getNext6PM(uint256 timestamp) internal pure returns (uint256) {
         uint256 currentDay = timestamp / 1 days;
         uint256 today6PM = currentDay * 1 days + 18 hours;
@@ -56,12 +58,26 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
         return today6PM;
     }
 
-    // called by automation at 24 hr daily
+    /** 
+    * @dev called by automation at 24 hr daily
+    */ 
     function updateRewardDistributionTime() public {
         require(block.timestamp >= s_distributionTimeStamp, "It's not time yet");
+
+    /** 
+    * @dev Reseting user steps data to initial value, if this function is called.
+    */ 
+    for (uint256 i = 0; i < stepsDataRecords.length; i++) {
+            address user = stepsDataRecords[i].requester;
+            delete userStepsData[user];
+            hasUserFetchedData[user] = false;
+        }
+        delete stepsDataRecords;
+
+        // Reset total steps count
+        totalStepsByAllUsersOnPreviousDay = 0;
         s_distributionTimeStamp += 1 days;
     }
-
     
     function _getMidnightTimestamp(uint256 timestamp) internal pure returns (uint256) {
         uint256 currentDay = timestamp / 1 days;
@@ -74,6 +90,7 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
      * this will we passed dynamically at source code
      */ 
     function getCurrentDayMidnightTimestamp() public returns (uint256) {
+
         return _getMidnightTimestamp(block.timestamp);
     }
 
@@ -87,45 +104,68 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
         return _getMidnightTimestamp(previousDayTimestamp);
     }
 
-    string public source = "const accessToken = 'ya29.a0AXooCgvDrNLc41EH3kSu8R2fPfyVG8X2bPq2nDta0QEv1jn1pvmZOvRKsHosElTn-NgC1B40trRPcycGOPuk2QpGk9aUcWfpfoG4Y7nYoXyX6VNTygkAMcmxbICkiRCPJaGD2F8dc-SgjtzqWdJFuxPk6LykWRY9Jd8VaCgYKARwSARISFQHGX2Miinkr9gTKUp6ErZJZqtcr-w0171';"
-    "const stepsRequestBody = {"
-    "  aggregateBy: ["
-    "    {"
-    "      dataTypeName: 'com.google.step_count.delta',"
-    "      dataSourceId: 'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',"
-    "    },"
-    "  ],"
-    "  bucketByTime: { durationMillis: 86400000 },"
-    "  startTimeMillis: 1716847200000,"
-    "  endTimeMillis: 1716882269739,"
-    "};"
-    "const stepsRequest = await Functions.makeHttpRequest({"
-    "  url: 'https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate',"
-    "  method: 'POST',"
-    "  headers: {"
-    "    Authorization: `Bearer ya29.a0AXooCgtVe-BYJNO8V3rHKmh2Flf7kk4JFkR22YvDXt-T3r58E7g6Iw0Ziovn0Fbw32M110BvwcJPY7WZKrgeCqx_ADcSHC8HfPlEBwBmgXm4g0TZB3hDCFiXOvfdNiDdl72SL2PyecWeXW5w3kbAw9eCEr2PVmwjakevaCgYKAQ8SARISFQHGX2Mi9WHs-I090JD0_BWP2VaNrg0171`,"
-    "  },"
-    "  data: stepsRequestBody,"
-    "});"
-    "if (stepsRequest.error) {"
-    "  throw new Error(`Request failed with error: ${JSON.stringify(stepsRequest.error)}`);"
-    "}"
-    "const { data } = stepsRequest;"
-    "let totalSteps = 0;"
-    "if (data && data.bucket) {"
-    "  totalSteps = data.bucket.reduce((total, bucket) => {"
-    "    if (bucket.dataset && bucket.dataset.length > 0 && bucket.dataset[0].point && bucket.dataset[0].point.length > 0) {"
-    "      return total + bucket.dataset[0].point.reduce((sum, point) => sum + (point.value[0].intVal || 0), 0);"
-    "    }"
-    "    return total;"
-    "  }, 0);"
-    "}"
-    "return Functions.encodeUint256(totalSteps);";
+    function uintToString(uint256 _value) internal pure returns (string memory) {
+    if (_value == 0) {
+        return "0";
+    }
+    uint256 temp = _value;
+    uint256 digits;
+    while (temp != 0) {
+        digits++;
+        temp /= 10;
+    }
+    bytes memory buffer = new bytes(digits);
+    while (_value != 0) {
+        digits -= 1;
+        buffer[digits] = bytes1(uint8(48 + _value % 10));
+        _value /= 10;
+    }
+    return string(buffer);
+    }
 
+    function sendRequest(string[] calldata args, string memory authToken) external returns (bytes32 requestId) {
 
-    function sendRequest(string[] calldata args) external returns (bytes32 requestId) {
+        uint256 startTimeMillis = getPreviousDayMidnightTimestamp() * 1000;
+        uint256 endTimeMillis = getCurrentDayMidnightTimestamp() * 1000;
+
+        string memory dynamicSource = string(abi.encodePacked(
+            "const accessToken = '", authToken, "';"
+            "const stepsRequestBody = {"
+            "  aggregateBy: ["
+            "    {"
+            "      dataTypeName: 'com.google.step_count.delta',"
+            "      dataSourceId: 'derived:com.google.step_count.delta:com.google.android.gms:estimated_steps',"
+            "    },"
+            "  ],"
+            "  bucketByTime: { durationMillis: 86400000 },"
+            "  startTimeMillis: ", uintToString(startTimeMillis), ","
+            "  endTimeMillis: ", uintToString(endTimeMillis), ","
+            "};"
+            "const stepsRequest = await Functions.makeHttpRequest({"
+            "  url: 'https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate',"
+            "  method: 'POST',"
+            "  headers: {"
+            "    Authorization: `Bearer ", authToken, "`,"
+            "  },"
+            "  data: stepsRequestBody,"
+            "});"
+            "if (stepsRequest.error) {"
+            "  throw new Error(`Request failed with error: ${JSON.stringify(stepsRequest.error)}`);"
+            "}"
+            "const { data } = stepsRequest;"
+            "let totalSteps = 0;"
+            "if (data && data.bucket) {"
+            "  totalSteps = data.bucket.reduce((total, bucket) => {"
+            "    if (bucket.dataset && bucket.dataset.length > 0 && bucket.dataset[0].point && bucket.dataset[0].point.length > 0) {"
+            "      return total + bucket.dataset[0].point.reduce((sum, point) => sum + (point.value[0].intVal || 0), 0);"
+            "    }"
+            "    return total;"
+            "  }, 0);"
+            "}"
+            "return Functions.encodeUint256(totalSteps);"
+        ));
         FunctionsRequest.Request memory req;
-        req.initializeRequestForInlineJavaScript(source); // Initialize the request with JS code
+        req.initializeRequestForInlineJavaScript(dynamicSource); // Initialize the request with JS code
         if (args.length > 0) req.setArgs(args); // Set the arguments for the request
 
         // Send the request and store the request ID

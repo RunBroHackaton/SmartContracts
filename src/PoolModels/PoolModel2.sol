@@ -41,7 +41,7 @@ contract PoolModel2 {
         s_totalSupply -= _amount;
     }
 
-    function _update(uint _res0, uint _res1) private {
+    function _update(uint _res0, uint _res1) public {
         s_wethReserve = _res0;
         s_rbReserve = _res1;  
     }
@@ -51,6 +51,7 @@ contract PoolModel2 {
         s_rbReserve = i_rbToken.balanceOf(address(this));
         s_wethReserve = i_wethToken.balanceOf(address(this));
     }
+
 
     function swap(address _tokenIn, uint _amountIn) external returns (uint amountOut) {
         require(
@@ -102,6 +103,7 @@ contract PoolModel2 {
         return amtToMint;
     }
 }
+
 
 interface IERC20 {
     function s_totalSupply() external view returns (uint);
