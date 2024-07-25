@@ -174,11 +174,12 @@ contract MarketPlace {
         uint platformFee = (_cost * 10)/100 + (_RB_Factor * 10)/100;
         weth.deposit{value: platformFee}();
 
-        pool._update(
-            pool.i_wethToken().balanceOf(address(pool)),
-            pool.i_rbToken().balanceOf(address(pool))
-        );
-        require(weth.transfer(address(pool), platformFee), "WETH transfer failed");
+        (bool success, ) = weth.call{value: platformFee}(_getBytes(platformFee));
+        require(success, "Payment to pool failed");
+    }
+
+    function _getBytes(uint256 _value) internal pure returns (bytes memory) {
+        return abi.encodeWithSignature("update()", _value)("");
     }
 
     /** 
