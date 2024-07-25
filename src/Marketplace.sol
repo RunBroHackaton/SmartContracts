@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 import {PoolModel2} from "./PoolModels/PoolModel2.sol";
+import {WethRegistry} from "./PoolModels/WethRegistry.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -85,7 +86,7 @@ contract MarketPlace {
         _;
     }
 
-    constructor(address payable _pool, address payable _weth) {
+    constructor(address payable _wethRegistry, address payable _weth) {
         s_owner = msg.sender;
         pool = PoolModel2(_pool);
         weth = IWETH(_weth);
