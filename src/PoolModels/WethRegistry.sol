@@ -43,7 +43,7 @@ contract WethRegistry{
         s_reservebalance += _amount;
     }
 
-//  This function will be called by chainlink automation.
+   //This function will be called by chainlink automation.
     function distributeBalanceToSlot() public {
         uint256 balancePerSlot = (s_reservebalance*SCALE)/s_currentNumberOfSlots;
 
@@ -53,11 +53,6 @@ contract WethRegistry{
         require(address(this).balance == 0, "Balance not cleared");
     }
 
-    function rewardAllotmentToDifferentSlots() public view returns(uint256){
-        uint256 noOfSlots = s_currentNumberOfSlots;
-        return _getRese
-        rveBalance()/noOfSlots;
-    }
     // -----------------------------VIEW FUNCTIONS-----------------------------------------
     //-------------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------------
@@ -74,6 +69,11 @@ contract WethRegistry{
     }
 
     function _getCurrentNumberOfSlots() public view returns(uint256){
-        return s_currentNumberOfSlots
+        return s_currentNumberOfSlots;
+    }
+
+    function rewardAllotmentToDifferentSlots() public view returns(uint256){
+        uint256 noOfSlots = s_currentNumberOfSlots;
+        return (s_reservebalance)/noOfSlots;
     }
 }

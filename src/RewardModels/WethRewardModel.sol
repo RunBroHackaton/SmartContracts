@@ -10,6 +10,7 @@ interface IWETH {
     function deposit() external payable;
     function transfer(address to, uint value) external returns (bool);
     function balanceOf(address s_owner) external view returns (uint);
+    function transferFrom(address sender, address recipient, uint amount) external returns (bool);
 }
 
 contract WethReward {
@@ -69,7 +70,6 @@ contract WethReward {
         require(i_marketplace.hasPurchasedShoe(msg.sender, _shoeId),"You are not eligible");
 
         uint256 rewardAmount = _calculateRewardOfUserSteps(msg.sender, _shoeId);
-
         i_weth.transferFrom(address(i_wethRegistry), msg.sender, rewardAmount);
     }
 

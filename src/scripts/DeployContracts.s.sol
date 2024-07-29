@@ -7,6 +7,8 @@ import {PoolModel2} from "../PoolModels/PoolModel2.sol";
 import {MarketPlace} from "../Marketplace.sol";
 import {Reward} from "../RewardModels/RewardModel3.sol";
 import {GetStepsAPI} from "../GSA_V6.sol";
+import {WethRegistry} from "../PoolModels/WethRegistry.sol";
+import {WethReward} from "../RewardModels/WethRewardModel.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -58,7 +60,9 @@ contract DeployContracts is Script {
         );
 
         MarketPlace marketPlace = new MarketPlace(payable(address(pool)), payable(wethAddress));
-        GetStepsAPI getstepsapi = new GetStepsAPI();
+        WethRegistry wethRegistry = new WethRegistry();
+        GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
+        WethReward wethReward = new WethReward(wethAddress, address(marketPlace), address(wethRegistry), address(getstepsapi));
         Reward reward = new Reward(address(rbToken), address(marketPlace), address(pool), address(getstepsapi));
         
         vm.stopBroadcast();
