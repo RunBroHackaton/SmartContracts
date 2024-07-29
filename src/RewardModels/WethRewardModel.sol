@@ -6,10 +6,17 @@ import {PoolModel2} from "../PoolModels/PoolModel2.sol";
 import {GetStepsAPI} from "../GSA_V6.sol";
 import {WethRegistry} from "../PoolModels/WethRegistry.sol";
 
+interface IWETH {
+    function deposit() external payable;
+    function transfer(address to, uint value) external returns (bool);
+    function balanceOf(address s_owner) external view returns (uint);
+}
+
 contract WethReward {
     MarketPlace public immutable i_marketplace;
     GetStepsAPI public immutable i_getStepsApi;
     WethRegistry public immutable i_wethRegistry;
+    IWETH public immutable i_weth;
 
     uint256 public constant SCALING_FACTOR = 10 ** 3;
 
@@ -19,23 +26,17 @@ contract WethReward {
 
     mapping(address => uint256) public s_userSteps;
     mapping(address => uint256) public s_stepShareOfUser;
-    uint256 public s_totalStepsByAllUsersInSlot;
 
-    constructor(address _rewardToken, address _marketPlace, address _wethRegistry, address _getStepsApi) {
+    //Slot analysis
+    uint256 public s_totalStepsByAllUsersInSlot;
+    mapping(uint256 => uint256) public s_totalStepsPerSlot;
+
+    constructor(address _wethToken, address _marketPlace, address _wethRegistry, address _getStepsApi) {
         i_getStepsApi = GetStepsAPI(_getStepsApi);
         i_marketplace = MarketPlace(_marketPlace);
         i_wethRegistry = WethRegistry(_wethRegistry);
-    }
+        i_weth = IWETH(_wethToken);
 
-    /**
-     * @dev This function will be called by user to convert rbToken to weth.
-     */ 
-    function swaprbToken() public {
-        require(
-            i_rbToken.balanceOf(msg.sender) > 0,
-            "You don't have suffient RB Tokens"
-        );
-        i_pool.swap(address(i_rbToken), i_rbToken.balanceOf(msg.sender));
     }
 
     /**
@@ -53,34 +54,38 @@ contract WethReward {
      */ 
     function recordFetchedSteps(address _account) public{
         GetStepsAPI.DailyStepsData memory userStepsDailyData = i_getStepsApi.func_userStepsData(_account);
-        s_userSteps[msg.sender] = userStepsDailyData.stepsCount;
-        s_totalStepsByAllUsers = i_getStepsApi.totalStepsByAllUsersOnPreviousDay();
+        uint256 userDailySteps = userStepsDailyData.stepsCount;
+        s_userSteps[msg.sender] = userDailySteps;
+
+        uint256 userSlotId = i_wethRegistry._getUserSlotId(msg.sender);
+        s_totalStepsPerSlot[userSlotId] += userDailySteps;
     }
 
     /**
      * @dev this function will only be called by user to claim his reward.
      */ 
-
     function takeRewardBasedOnShoeId(uint256 _shoeId) public{
         require(i_marketplace.checkUserRegistraction(msg.sender),"User not registered");
         require(i_marketplace.hasPurchasedShoe(msg.sender, _shoeId),"You are not eligible");
 
         uint256 rewardAmount = _calculateRewardOfUserSteps(msg.sender, _shoeId);
 
-        i_rbToken.transferFrom(address(i_pool), msg.sender, rewardAmount);
+        i_weth.transferFrom(address(i_wethRegistry), msg.sender, rewardAmount);
     }
 
     function _calculateRewardOfUserSteps(address _account, uint256 _shoeId) internal returns(uint256){
         uint256 RB_Factor = i_marketplace.getShoeRB_Factor(_shoeId);
-        uint256 rewardOfUser = _calculateShareOfUsersSteps(_account) * RB_Factor ;
+        uint256 rewardOfUser = _calculateShareOfUsersStepsInSlot(_account) * RB_Factor ;
         return rewardOfUser;
     }
-
-    function _calculateShareOfUsersSteps(address _account) internal returns(uint256){
+    function _calculateShareOfUsersStepsInSlot(address _account) internal returns(uint256){
         uint256 userSteps = s_userSteps[_account];
-        uint256 totalStepsByAllUsers = s_totalStepsByAllUsersInSlot;
+        uint256 userSlotId = i_wethRegistry._getUserSlotId(_account);
+        uint256 totalStepsInSlot = s_totalStepsPerSlot[userSlotId];
         
-        s_stepShareOfUser[_account] = (userSteps * i_pool.s_rbReserve() * SCALING_FACTOR)/totalStepsByAllUsers;
+        (, , ,uint256 rewardFund) = i_wethRegistry._getSlotData(userSlotId);
+
+        s_stepShareOfUser[_account] = (userSteps * rewardFund * SCALING_FACTOR)/totalStepsInSlot;
         return s_stepShareOfUser[_account];
     }
 

@@ -11,8 +11,8 @@ interface IWETH {
 
 contract MarketPlace {
     address public s_owner;
-    PoolModel2 public immutable pool;
     IWETH public immutable weth;
+    WethRegistry public immutable wethregistry;
 
     struct Shoe {
         uint256 id;
@@ -49,6 +49,9 @@ contract MarketPlace {
     uint[] public s_arrayOfIds;
 
     mapping(address => uint[]) public s_numberOfShoeIdsOwnerByUser;
+
+    // Slot consideration
+    mapping(address => uint256) public s_userInSlot;
 
     event Buy(
         address buyer,
@@ -88,8 +91,8 @@ contract MarketPlace {
 
     constructor(address payable _wethRegistry, address payable _weth) {
         s_owner = msg.sender;
-        pool = PoolModel2(_pool);
         weth = IWETH(_weth);
+        wethregistry = WethRegistry(_wethRegistry);
     }
 
     function chainlinkfunctionData() public {}
@@ -174,13 +177,9 @@ contract MarketPlace {
 
         uint platformFee = (_cost * 10)/100 + (_RB_Factor * 10)/100;
         weth.deposit{value: platformFee}();
-
-        (bool success, ) = weth.call{value: platformFee}(_getBytes(platformFee));
-        require(success, "Payment to pool failed");
-    }
-
-    function _getBytes(uint256 _value) internal pure returns (bytes memory) {
-        return abi.encodeWithSignature("update()", _value)("");
+        weth.transfer(address(wethregistry), platformFee);
+    
+        wethregistry._updateReserveBalance(platformFee);
     }
 
     /** 
@@ -191,6 +190,9 @@ contract MarketPlace {
         Shoe memory shoe = s_shoes[_id];
         require(msg.value >= shoe.cost, "Insufficient payment");
         require(shoe.quantity > 0, "Out of stock");
+
+        uint256 currentSlot = wethregistry.s_currentNumberOfSlots();
+        wethregistry._addUserToSlot(currentSlot, msg.sender);
 
         s_orderCount[msg.sender]++;
         s_orders[msg.sender][s_orderCount[msg.sender]] = Order(block.timestamp, shoe);
@@ -219,6 +221,10 @@ contract MarketPlace {
     //------------------------------VIEW FUNCTIONS-----------------------------------------
     //-------------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------------
+    function getSlotIdOfUser(address _account) public view returns (uint256) {
+        return s_userInSlot[_account];
+    } 
+
 
     function checkUserRegistraction(address _user) public view returns (bool) {
         return s_IsUserRegistred[_user];

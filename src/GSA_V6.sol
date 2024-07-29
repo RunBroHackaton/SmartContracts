@@ -4,9 +4,12 @@ pragma solidity ^0.8.18;
 import {FunctionsClient} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/FunctionsClient.sol";
 import {ConfirmedOwner} from "@chainlink/contracts/src/v0.8/shared/access/ConfirmedOwner.sol";
 import {FunctionsRequest} from "@chainlink/contracts/src/v0.8/functions/dev/v1_0_0/libraries/FunctionsRequest.sol";
+import {WethRegistry} from "./PoolModels/WethRegistry.sol";
 
 contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     using FunctionsRequest for FunctionsRequest.Request;
+
+    WethRegistry private immutable wethregistry;
 
     bytes32 public s_lastRequestId;
     bytes public s_lastResponse;
@@ -23,6 +26,7 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     mapping(address=> bool) public hasUserFetchedData; 
 
     uint256 public totalStepsByAllUsersOnPreviousDay;
+    mapping(uint256 => mapping(address => uint256)) public totalStepsByAllUsersInSlotOnPreviousDay; // slot => (user => steps)
 
     error UnexpectedRequestID(bytes32 requestId);
     event Response(bytes32 indexed requestId, bytes response, bytes err);
@@ -39,12 +43,11 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     uint256 public s_contractCreationTime;
     mapping(address => mapping(uint256 => bool)) public s_IsUserAlreadyLogin;
     uint256 public s_distributionTimeStamp;
-
-
-
-    constructor() FunctionsClient(router) ConfirmedOwner(msg.sender) {
+    constructor(address _wethregistry) FunctionsClient(router) ConfirmedOwner(msg.sender) {
+        wethregistry = WethRegistry(_wethregistry);
         s_contractCreationTime = block.timestamp;
         s_distributionTimeStamp = getNext6PM(block.timestamp);
+
     }
     /**
     * @dev rewardDistributionTime is 6 PM Daily. 
@@ -98,29 +101,29 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
      * @dev called by automation at 24 he daily
      * this will we passed dynamically at source code
      */ 
-    function getPreviousDayMidnightTimestamp() public returns (uint256) {
+    function getPreviousDayMidnightTimestamp() public view returns (uint256) {
         // Subtract 1 day (86400 seconds) from the current timestamp
         uint256 previousDayTimestamp = block.timestamp - 1 days;
         return _getMidnightTimestamp(previousDayTimestamp);
     }
 
     function uintToString(uint256 _value) internal pure returns (string memory) {
-    if (_value == 0) {
-        return "0";
-    }
-    uint256 temp = _value;
-    uint256 digits;
-    while (temp != 0) {
-        digits++;
-        temp /= 10;
-    }
-    bytes memory buffer = new bytes(digits);
-    while (_value != 0) {
-        digits -= 1;
-        buffer[digits] = bytes1(uint8(48 + _value % 10));
-        _value /= 10;
-    }
-    return string(buffer);
+        if (_value == 0) {
+            return "0";
+        }
+        uint256 temp = _value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (_value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + _value % 10));
+            _value /= 10;
+        }
+        return string(buffer);
     }
 
     function sendRequest(string[] calldata args, string memory authToken) external returns (bytes32 requestId) {
