@@ -9,6 +9,7 @@ import {Reward} from "../RewardModels/RewardModel3.sol";
 import {GetStepsAPI} from "../GSA_V6.sol";
 import {WethRegistry} from "../PoolModels/WethRegistry.sol";
 import {WethReward} from "../RewardModels/WethRewardModel.sol";
+import {Escrow} from "../Escrow.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -46,7 +47,9 @@ contract DeployContracts is Script {
         RunBroToken rbToken = new RunBroToken(initialSupply);
         PoolModel2 pool = new PoolModel2(wethAddress, address(rbToken));
         rbToken.approve(address(pool), initial_rbTokens_inPool);
+        Escrow escrow = new Escrow();
         IWETH(wethAddress).approve(address(pool), initial_weth_inPool);
+
 
         pool.setIntialBalanceOfpool(initial_rbTokens_inPool);
 
@@ -59,7 +62,7 @@ contract DeployContracts is Script {
             rbToken.balanceOf(address(pool))
         );
 
-        MarketPlace marketPlace = new MarketPlace(payable(address(pool)), payable(wethAddress));
+        MarketPlace marketPlace = new MarketPlace(payable(address(pool)), payable(wethAddress), payable(address(escrow)));
         WethRegistry wethRegistry = new WethRegistry();
         GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
         WethReward wethReward = new WethReward(wethAddress, address(marketPlace), address(wethRegistry), address(getstepsapi));

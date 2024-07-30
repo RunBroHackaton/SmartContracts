@@ -22,7 +22,7 @@ contract WethRegistry{
     }
 
     function _addUserToSlot(uint256 _slotId, address _user) public {
-        if(s_slot[_slotId].numberOfUsers >= 100){
+        if(s_slot[_slotId].numberOfUsers >= MAX_USERS_PER_SLOT){
             _updateSlotCountAndCreateNewSlot();
             uint256 latestSlotNumber = s_currentNumberOfSlots;
             s_slot[latestSlotNumber].users.push(_user);
@@ -34,7 +34,7 @@ contract WethRegistry{
     }
 
     function _updateSlotCountAndCreateNewSlot() internal {
-        require(s_slot[s_currentNumberOfSlots].numberOfUsers >= 100, "Slot is not full yet");
+        require(s_slot[s_currentNumberOfSlots].numberOfUsers >= MAX_USERS_PER_SLOT, "Slot is not full yet");
         s_currentNumberOfSlots++;
         _createSlot(s_currentNumberOfSlots);
     }

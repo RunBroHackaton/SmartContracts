@@ -1,0 +1,18 @@
+{
+  "name": "smartcontracts",
+  "version": "1.0.0",
+  "description": "RunBro is a decentralized platform that rewards users for their physical activity by integrating the Google Fit API with a unique reward model. Users can buy and sell fitness-related items (such as shoes) while earning native tokens (RBT) based on their steps.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@uniswap/v3-periphery": "^1.4.4"
+  }
+}

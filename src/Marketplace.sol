@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.18;
 import {PoolModel2} from "./PoolModels/PoolModel2.sol";
 import {WethRegistry} from "./PoolModels/WethRegistry.sol";
+import {Escrow} from "./Escrow.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -13,6 +14,7 @@ contract MarketPlace {
     address public s_owner;
     IWETH public immutable weth;
     WethRegistry public immutable wethregistry;
+    Escrow public immutable escrow;
 
     struct Shoe {
         uint256 id;
@@ -23,6 +25,10 @@ contract MarketPlace {
         uint256 RB_Factor;
         uint256 quantity;
         address lister;
+        bool payedToEscrow;
+        bool payedToSeller;
+        bool confirmationByBuyer;
+        bool confirmationBySeller;
     }
 
     struct Order {
@@ -38,7 +44,7 @@ contract MarketPlace {
     mapping(address => mapping(uint256 => uint256)) public s_stepsByUserAtMoment;
     mapping(bytes32 => address) private s_emailToAddress;
     mapping(bytes32 => uint256) private s_emailToSteps;
-    mapping(address => mapping(uint256 => bool)) public s_hasUserPurchased_A_Shoe;
+    mapping(address => mapping(uint256 => bool)) public s_userInitiatedPurchase;
     mapping(address => uint256) public s_userSelectedShoe;
     mapping(address => bool) public s_IsUserRegistred;
 
@@ -89,13 +95,12 @@ contract MarketPlace {
         _;
     }
 
-    constructor(address payable _wethRegistry, address payable _weth) {
+    constructor(address payable _wethRegistry, address payable _weth, address payable _escrow) {
         s_owner = msg.sender;
         weth = IWETH(_weth);
         wethregistry = WethRegistry(_wethRegistry);
+        escrow = Escrow(_escrow);
     }
-
-    function chainlinkfunctionData() public {}
 
     /**
     * @dev Function to map an email to steps covered
@@ -156,9 +161,9 @@ contract MarketPlace {
         uint256 _RB_Factor,
         uint256 _quantity
     ) public payable {
-        require(s_IsSellerRegistred[msg.sender] ==true, "Not registered");
+        require(s_IsSellerRegistred[msg.sender] == true, "Not registered");
         // Platform Fee is 10% of _cost and 10% of _RB_Factor.
-        require(msg.value >= (_cost * 10)/100 + (_RB_Factor*10)/ 100, "Insufficient fee");
+        require(msg.value >= (_cost * 10)/100 + (_RB_Factor * 10)/100, "Insufficient fee");
 
         s_shoeCount++;
 
@@ -170,7 +175,11 @@ contract MarketPlace {
             cost: _cost,
             RB_Factor: _RB_Factor,
             quantity: _quantity,
-            lister: msg.sender
+            lister: msg.sender,
+            payedToEscrow: false,
+            payedToSeller: false,
+            confirmationByBuyer: false,
+            confirmationBySeller: false
         });
     
         emit List(s_shoeCount, _name, _brand, _image, _cost, _RB_Factor, _quantity, msg.sender);
@@ -198,25 +207,45 @@ contract MarketPlace {
         s_orders[msg.sender][s_orderCount[msg.sender]] = Order(block.timestamp, shoe);
 
         s_shoes[_id].quantity--;
-        s_hasUserPurchased_A_Shoe[msg.sender][_id] = true;
+        s_userInitiatedPurchase[msg.sender][_id] = true;
         s_IsUserRegistred[msg.sender] = true;
         if (s_shoes[_id].quantity == 0) {
             s_isSoldOut[_id] = true;
         }
-
+        
         s_numberOfShoeIdsOwnerByUser[msg.sender].push(_id);
 
-        emit Buy(msg.sender, s_orderCount[msg.sender], shoe.id, shoe.RB_Factor, true);
+        //--------------Escrow----------------
+        s_shoes[_id].payedToEscrow = true;
+        (bool success, ) = address(escrow).call{value: msg.value}("");
+        require(success, "Payment to Escrow failed");
+        escrow.updateBuyerPayment(msg.sender, s_shoes[_id].lister, msg.value);
 
-        (bool success, ) = shoe.lister.call{value: msg.value}("");
-        require(success, "Payment to lister failed");
+        emit Buy(msg.sender, s_orderCount[msg.sender], shoe.id, shoe.RB_Factor, true);    
+    }
+    function confirmDeliveryOfShoeByUser(uint256 _orderId) public {
+        require(s_userInitiatedPurchase[msg.sender][_orderId], "You don't own this shoe");
+        require(s_shoes[_orderId].confirmationByBuyer == false, "Shoe already delivered");
+
+        s_shoes[_orderId].confirmationByBuyer = true;
+    }
+    function _confirmDeliveryOfShoeBySeller(uint256 _orderId) internal {
+        require(s_shoes[_orderId].payedToSeller == false, "Payment already done");
+        require(s_shoes[_orderId].confirmationBySeller == false, "Shoe already delivered");
+        require(s_shoes[_orderId].confirmationByBuyer == true, "Buyer has not confirmed yet");
+        require(s_shoes[_orderId].lister == msg.sender, "Payment to escrow not done");
+
+        s_shoes[_orderId].confirmationBySeller = true;
+        escrow.payToSeller(s_shoes[_orderId].lister);
+        s_shoes[_orderId].payedToSeller = true;
     }
 
     function selectShoe(uint256 _id) public returns(uint256){
-        require(s_hasUserPurchased_A_Shoe[msg.sender][_id], "You don't own this shoe");
+        require(s_userInitiatedPurchase[msg.sender][_id], "You don't own this shoe");
         s_userSelectedShoe[msg.sender]= _id;
         return _id;
     }
+
 
     //------------------------------VIEW FUNCTIONS-----------------------------------------
     //-------------------------------------------------------------------------------------
@@ -253,12 +282,12 @@ contract MarketPlace {
     * When User has two more than one shoe to choose.
     */
     // function selectShoe(uint256 _shoeId) public view returns (Shoe memory) {
-    //     require(s_hasUserPurchased_A_Shoe[msg.sender][_shoeId], "You do not own this shoe");
+    //     require(s_userInitiatedPurchase[msg.sender][_shoeId], "You do not own this shoe");
     //     return s_shoes[_shoeId];
     // }
 
     function hasPurchasedShoe(address _account, uint256 _shoeId) public view returns (bool) {
-        return s_hasUserPurchased_A_Shoe[_account][_shoeId];
+        return s_userInitiatedPurchase[_account][_shoeId];
     }
 
     function getOrderTime(address _account, uint256 _orderId) public view returns (uint256) {
