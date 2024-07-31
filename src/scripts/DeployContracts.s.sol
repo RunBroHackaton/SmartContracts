@@ -3,10 +3,10 @@ pragma solidity ^0.8.18;
 
 import {Script, console} from "forge-std/Script.sol";
 import {RunBroToken} from "../RunBroToken.sol";
-import {PoolModel2} from "../PoolModels/PoolModel2.sol";
+// import {PoolModel2} from "../PoolModels/PoolModel2.sol";
 import {MarketPlace} from "../Marketplace.sol";
-import {Reward} from "../RewardModels/RewardModel3.sol";
-import {GetStepsAPI} from "../GSA_V6.sol";
+// import {Reward} from "../RewardModels/RewardModel3.sol";
+import {GetStepsAPI} from "../GoogleStepsApi.sol";
 import {WethRegistry} from "../PoolModels/WethRegistry.sol";
 import {WethReward} from "../RewardModels/WethRewardModel.sol";
 import {Escrow} from "../Escrow.sol";
@@ -40,41 +40,41 @@ contract DeployContracts is Script {
     address public owner;
 
     function run() external {
-        // console.log("OWNER'S BALANCE IN ETH", owner.balance);
-        owner = msg.sender;
-        vm.startBroadcast(owner);
+        // // console.log("OWNER'S BALANCE IN ETH", owner.balance);
+        // owner = msg.sender;
+        // vm.startBroadcast(owner);
 
-        RunBroToken rbToken = new RunBroToken(initialSupply);
-        PoolModel2 pool = new PoolModel2(wethAddress, address(rbToken));
-        rbToken.approve(address(pool), initial_rbTokens_inPool);
-        Escrow escrow = new Escrow();
-        IWETH(wethAddress).approve(address(pool), initial_weth_inPool);
+        // RunBroToken rbToken = new RunBroToken(initialSupply);
+        // PoolModel2 pool = new PoolModel2(wethAddress, address(rbToken));
+        // rbToken.approve(address(pool), initial_rbTokens_inPool);
+        // Escrow escrow = new Escrow();
+        // IWETH(wethAddress).approve(address(pool), initial_weth_inPool);
 
 
-        pool.setIntialBalanceOfpool(initial_rbTokens_inPool);
+        // pool.setIntialBalanceOfpool(initial_rbTokens_inPool);
 
-        console.log(
-            "Amount of WETH in Pool",
-            IWETH(wethAddress).balanceOf(address(pool))
-        );
-        console.log(
-            "Amount of RBToken in Pool",
-            rbToken.balanceOf(address(pool))
-        );
+        // console.log(
+        //     "Amount of WETH in Pool",
+        //     IWETH(wethAddress).balanceOf(address(pool))
+        // );
+        // console.log(
+        //     "Amount of RBToken in Pool",
+        //     rbToken.balanceOf(address(pool))
+        // );
 
-        MarketPlace marketPlace = new MarketPlace(payable(address(pool)), payable(wethAddress), payable(address(escrow)));
-        WethRegistry wethRegistry = new WethRegistry();
-        GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
-        WethReward wethReward = new WethReward(wethAddress, address(marketPlace), address(wethRegistry), address(getstepsapi));
-        Reward reward = new Reward(address(rbToken), address(marketPlace), address(pool), address(getstepsapi));
+        // MarketPlace marketPlace = new MarketPlace(payable(address(pool)), payable(wethAddress), payable(address(escrow)));
+        // WethRegistry wethRegistry = new WethRegistry();
+        // GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
+        // WethReward wethReward = new WethReward(wethAddress, address(marketPlace), address(wethRegistry), address(getstepsapi));
+        // Reward reward = new Reward(address(rbToken), address(marketPlace), address(pool), address(getstepsapi));
         
-        vm.stopBroadcast();
+        // vm.stopBroadcast();
 
-        console.log("RB Token Address", address(rbToken));
-        console.log("Pool Address", address(pool));
-        console.log("Marketplace Address", address(marketPlace));
-        console.log("getStepsApi Address", address(getstepsapi));
-        console.log("Reward Address", address(reward));
+        // console.log("RB Token Address", address(rbToken));
+        // console.log("Pool Address", address(pool));
+        // console.log("Marketplace Address", address(marketPlace));
+        // console.log("getStepsApi Address", address(getstepsapi));
+        // console.log("Reward Address", address(reward));
 
     }
 }

@@ -27,9 +27,11 @@ contract WethRegistry{
             uint256 latestSlotNumber = s_currentNumberOfSlots;
             s_slot[latestSlotNumber].users.push(_user);
             s_slot[latestSlotNumber].numberOfUsers++;
+            s_userSlotId[_user] = latestSlotNumber;
         } else {
             s_slot[_slotId].users.push(_user);
             s_slot[_slotId].numberOfUsers++;
+            s_userSlotId[_user] = _slotId;
         }
     }
 
@@ -43,9 +45,16 @@ contract WethRegistry{
         s_reservebalance += _amount;
     }
 
-   //This function will be called by chainlink automation.
+    function setRandomSlotData(uint256 _slotId, uint256 _numberOfUsers, address[] memory _users, uint256 _rewardFund) public {
+        s_slot[_slotId].slotId = _slotId;
+        s_slot[_slotId].numberOfUsers = _numberOfUsers;
+        s_slot[_slotId].users = _users;
+        s_slot[_slotId].rewardFund = _rewardFund;
+    }
+
+    // This function will be called by chainlink automation.
     function distributeBalanceToSlot() public {
-        uint256 balancePerSlot = (s_reservebalance*SCALE)/s_currentNumberOfSlots;
+        uint256 balancePerSlot = (s_reservebalance)/(s_currentNumberOfSlots+1);
 
         for (uint256 i=1; i<=s_currentNumberOfSlots; i++){
             s_slot[i].rewardFund = balancePerSlot;       
@@ -53,7 +62,7 @@ contract WethRegistry{
         require(address(this).balance == 0, "Balance not cleared");
     }
 
-    // -----------------------------VIEW FUNCTIONS-----------------------------------------
+    //------------------------------VIEW FUNCTIONS-----------------------------------------
     //-------------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------------
     function _getReserveBalance() public view returns(uint256) {

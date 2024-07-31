@@ -2,8 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {MarketPlace} from "../Marketplace.sol";
-import {PoolModel2} from "../PoolModels/PoolModel2.sol";
-import {GetStepsAPI} from "../GSA_V6.sol";
+import {GetStepsAPI} from "../GoogleStepsApi.sol";
 import {WethRegistry} from "../PoolModels/WethRegistry.sol";
 
 interface IWETH {
@@ -64,7 +63,7 @@ contract WethReward {
 
     /**
      * @dev this function will only be called by user to claim his reward.
-     */ 
+     */
     function takeRewardBasedOnShoeId(uint256 _shoeId) public{
         require(i_marketplace.checkUserRegistraction(msg.sender),"User not registered");
         require(i_marketplace.hasPurchasedShoe(msg.sender, _shoeId),"You are not eligible");

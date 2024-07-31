@@ -39,7 +39,7 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     uint32 gasLimit = 300000;
     bytes32 constant donId = 0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000;
 
-//----Reward related Stuff-------------------------------------------
+//----Reward related Stuff------------------------------------
     uint256 public s_contractCreationTime;
     mapping(address => mapping(uint256 => bool)) public s_IsUserAlreadyLogin;
     uint256 public s_distributionTimeStamp;
@@ -52,7 +52,7 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     /**
     * @dev rewardDistributionTime is 6 PM Daily. 
     */
-    function getNext6PM(uint256 timestamp) internal pure returns (uint256) {
+    function getNext6PM(uint256 timestamp) public pure returns (uint256) {
         uint256 currentDay = timestamp / 1 days;
         uint256 today6PM = currentDay * 1 days + 18 hours;
         if (timestamp >= today6PM) {
@@ -89,11 +89,10 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     }
     
     /**
-     * @dev called by automation at 24 he daily
+     * @dev called by automation at 24 hr daily
      * this will we passed dynamically at source code
      */ 
     function getCurrentDayMidnightTimestamp() public returns (uint256) {
-
         return _getMidnightTimestamp(block.timestamp);
     }
 
