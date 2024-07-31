@@ -66,14 +66,13 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     */ 
     function updateRewardDistributionTime() public {
         require(block.timestamp >= s_distributionTimeStamp, "It's not time yet");
-
-    /** 
-    * @dev Reseting user steps data to initial value, if this function is called.
-    */ 
-    for (uint256 i = 0; i < stepsDataRecords.length; i++) {
-            address user = stepsDataRecords[i].requester;
-            delete userStepsData[user];
-            hasUserFetchedData[user] = false;
+        /** 
+        * @dev Reseting user steps data to initial value, if this function is called.
+        */ 
+        for (uint256 i = 0; i < stepsDataRecords.length; i++) {
+                address user = stepsDataRecords[i].requester;
+                delete userStepsData[user];
+                hasUserFetchedData[user] = false;
         }
         delete stepsDataRecords;
 
@@ -99,7 +98,7 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     /**
      * @dev called by automation at 24 he daily
      * this will we passed dynamically at source code
-     */ 
+     */
     function getPreviousDayMidnightTimestamp() public view returns (uint256) {
         // Subtract 1 day (86400 seconds) from the current timestamp
         uint256 previousDayTimestamp = block.timestamp - 1 days;

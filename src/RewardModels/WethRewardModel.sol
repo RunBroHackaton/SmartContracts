@@ -30,13 +30,13 @@ contract WethReward {
     //Slot analysis
     uint256 public s_totalStepsByAllUsersInSlot;
     mapping(uint256 => uint256) public s_totalStepsPerSlot;
+    mapping(address => uint256) public s_userRewards;
 
     constructor(address _wethToken, address _marketPlace, address _wethRegistry, address _getStepsApi) {
         i_getStepsApi = GetStepsAPI(_getStepsApi);
         i_marketplace = MarketPlace(_marketPlace);
         i_wethRegistry = WethRegistry(_wethRegistry);
         i_weth = IWETH(_wethToken);
-
     }
 
     /**
@@ -69,6 +69,7 @@ contract WethReward {
         require(i_marketplace.hasPurchasedShoe(msg.sender, _shoeId),"You are not eligible");
 
         uint256 rewardAmount = _calculateRewardOfUserSteps(msg.sender, _shoeId);
+        s_userRewards[msg.sender]= rewardAmount;
         i_weth.transferFrom(address(i_wethRegistry), msg.sender, rewardAmount);
     }
 
@@ -86,6 +87,10 @@ contract WethReward {
 
         s_stepShareOfUser[_account] = (userSteps * rewardFund * SCALING_FACTOR)/totalStepsInSlot;
         return s_stepShareOfUser[_account];
+    }
+
+    function getRewardDataOfUsers(address _account) public view returns(uint256){
+        return s_userRewards[_account];
     }
 
     function createMockData(

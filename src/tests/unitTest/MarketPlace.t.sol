@@ -127,9 +127,7 @@ contract MarketplaceTest is Test {
         uint256 itemRB_Factor = 0.1 ether;
         uint256 platformFee = (itemCost * 10) / 100 + (itemRB_Factor * 10) / 100;
         uint256 creditcardNumber = 1234;
-
         
-
         // Act
         vm.deal(seller, 2 ether);
         vm.deal(buyer, 2 ether);
