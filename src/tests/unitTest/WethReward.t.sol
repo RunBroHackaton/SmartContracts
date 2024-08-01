@@ -70,7 +70,14 @@ contract WethRewardTest is Test {
     }
 
     function testTheMomentsWhenUserCalledFetchData() public {
-        
+        vm.prank(user);
+
+        string[] memory args = new string[](0);
+        string memory authToken = "testAuthToken";
+
+        bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
+        assertEq(getStepsAPI.s_lastRequestId(), requestId);
+        assertEq(getStepsAPI.requestIdToAddress(requestId), user);
     }
 
     // function testSendRequestToFetchSteps() public {

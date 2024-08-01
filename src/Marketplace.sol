@@ -58,6 +58,8 @@ contract MarketPlace {
 
     // Slot consideration
     mapping(address => uint256) public s_userInSlot;
+    // Home Address
+    mapping(address => string) public s_userHomeAddress;
 
     event Buy(
         address buyer,
@@ -223,6 +225,10 @@ contract MarketPlace {
 
         emit Buy(msg.sender, s_orderCount[msg.sender], shoe.id, shoe.RB_Factor, true);    
     }
+
+    function setUserHomeAddress(string memory _homeAddress) public {
+        s_userHomeAddress[msg.sender] = _homeAddress;
+    }
     function confirmDeliveryOfShoeByUser(uint256 _orderId) public {
         require(s_userInitiatedPurchase[msg.sender][_orderId], "You don't own this shoe");
         require(s_shoes[_orderId].confirmationByBuyer == false, "Shoe already delivered");
@@ -250,6 +256,10 @@ contract MarketPlace {
     //------------------------------VIEW FUNCTIONS-----------------------------------------
     //-------------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------------
+
+    function getUserHomeAddress(address _account) public view returns(string memory){
+        return s_userHomeAddress[_account];
+    }
     function getSlotIdOfUser(address _account) public view returns (uint256) {
         return s_userInSlot[_account];
     } 

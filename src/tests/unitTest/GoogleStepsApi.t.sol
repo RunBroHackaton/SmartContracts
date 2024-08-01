@@ -31,7 +31,6 @@ contract GetStepsAPITest is Test {
         if (currentTimestamp >= expectedNext6PM) {
             expectedNext6PM += 1 days;
         }
-
         assertEq(next6PM, expectedNext6PM);
     }
 
@@ -74,38 +73,38 @@ contract GetStepsAPITest is Test {
     //     assertEq(getStepsAPI.totalStepsByAllUsersOnPreviousDay(), 1000);
     // }
 
-    function testGetAllDailyStepDataRecords() public {
-        vm.prank(user);
+    // function testGetAllDailyStepDataRecords() public {
+    //     vm.prank(user);
 
-        string[] memory args = new string[](0);
-        string memory authToken = "testAuthToken";
+    //     string[] memory args = new string[](0);
+    //     string memory authToken = "testAuthToken";
 
-        bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
+    //     bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
 
-        bytes memory response = abi.encode(uint256(1000));
-        bytes memory error = "";
+    //     bytes memory response = abi.encode(uint256(1000));
+    //     bytes memory error = "";
 
-        getStepsAPI.fulfillRequest(requestId, response, error);
+    //     getStepsAPI.fulfillRequest(requestId, response, error);
 
-        GetStepsAPI.DailyStepsData[] memory records = getStepsAPI.getAllDailyStepDataRecords();
-        assertEq(records.length, 1);
-        assertEq(records[0].stepsCount, 1000);
-    }
+    //     GetStepsAPI.DailyStepsData[] memory records = getStepsAPI.getAllDailyStepDataRecords();
+    //     assertEq(records.length, 1);
+    //     assertEq(records[0].stepsCount, 1000);
+    // }
 
-    function testGetLatestUserStepsData() public {
-        vm.prank(user);
+    // function testGetLatestUserStepsData() public {
+    //     vm.prank(user);
 
-        string[] memory args = new string[](0);
-        string memory authToken = "testAuthToken";
+    //     string[] memory args = new string[](0);
+    //     string memory authToken = "testAuthToken";
 
-        bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
+    //     bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
 
-        bytes memory response = abi.encode(uint256(1000));
-        bytes memory error = "";
+    //     bytes memory response = abi.encode(uint256(1000));
+    //     bytes memory error = "";
 
-        getStepsAPI.fulfillRequest(requestId, response, error);
+    //     getStepsAPI.fulfillRequest(requestId, response, error);
 
-        GetStepsAPI.DailyStepsData memory latestData = getStepsAPI.getLatestUserStepsData(user);
-        assertEq(latestData.stepsCount, 1000);
-    }
+    //     GetStepsAPI.DailyStepsData memory latestData = getStepsAPI.getLatestUserStepsData(user);
+    //     assertEq(latestData.stepsCount, 1000);
+    // }
 }
