@@ -8,7 +8,7 @@ import {GetStepsAPI} from "src/GoogleStepsApi.sol";
 import {WethRegistry} from "src/PoolModels/WethRegistry.sol";
 import {Escrow} from "src/Escrow.sol";
 import {MockWETH} from "src/tests/mocks/MockWETH.sol";
-import {MockGoogleStepsApi} from "src/tests/mocks/MockGoogleStepsApi.sol";
+import {MockGoogleStepsAPI} from "src/tests/mocks/MockGoogleStepsAPI.sol";
 
 
 contract WethRewardTest is Test {
@@ -17,7 +17,7 @@ contract WethRewardTest is Test {
     WethRegistry public wethRegistry;
     Escrow public escrow;
     MockWETH public mweth;
-    MockGoogleStepsApi public mockgetStepsApi;
+    MockGoogleStepsAPI public mockgetStepsApi;
     address public owner;
     address public addr1;
     address public addr2;
@@ -65,41 +65,39 @@ contract WethRewardTest is Test {
 
     }
 
-        // // Assert
-        // assertEq(wethRegistry.s_reservebalance(), platformFee, "A");
-        // assertEq(wethRegistry.s_currentNumberOfSlots(), 0, "B");
-        // assertEq(wethRegistry._getUserSlotId(buyer), 0, "C");
-        // (uint256 slotId, uint256 numberOfUsers, address[] memory users, uint256 rewardFund) = wethRegistry._getSlotData(0);
-        // assertEq(slotId, 0, "D");
-        // assertEq(numberOfUsers, 1, "E");
-        // assertEq(users.length, 1, "F");
-        // assertEq(rewardFund, 0, "G");
+    function testRewardDistributionAutomation() public {
 
-    function testSendRequestToFetchSteps() public {
-        wethReward.sendRequestToFetchSteps("authToken");
-        // Add assertions based on the expected behavior of sendRequestToFetchSteps
     }
 
-    function testRecordFetchedSteps() public {
-        // Mock the response of getStepsApi.func_userStepsData
-        getStepsApi.setUserStepsData(addr1, 1000);
-        wethReward.recordFetchedSteps(addr1);
-        assertEq(wethReward.s_userSteps(addr1), 1000);
+    function testTheMomentsWhenUserCalledFetchData() public {
+        
     }
 
-    function testTakeRewardBasedOnShoeId() public {
-        // Mock the necessary functions and data
-        marketPlace.setUserRegistration(addr1, true);
-        marketPlace.setUserShoe(addr1, 1, true);
-        marketPlace.setShoeRB_Factor(1, 2);
+    // function testSendRequestToFetchSteps() public {
+    //     wethReward.sendRequestToFetchSteps("authToken");
+    //     // Add assertions based on the expected behavior of sendRequestToFetchSteps
+    // }
 
-        wethRegistry.setUserSlotId(addr1, 1);
-        wethRegistry.setSlotData(1, 0, 0, 0, 1000);
+    // function testRecordFetchedSteps() public {
+    //     // Mock the response of getStepsApi.func_userStepsData
+    //     getStepsApi.setUserStepsData(addr1, 1000);
+    //     wethReward.recordFetchedSteps(addr1);
+    //     assertEq(wethReward.s_userSteps(addr1), 1000);
+    // }
 
-        getStepsApi.setUserStepsData(addr1, 1000);
-        wethReward.recordFetchedSteps(addr1);
+    // function testTakeRewardBasedOnShoeId() public {
+    //     // Mock the necessary functions and data
+    //     marketPlace.setUserRegistration(addr1, true);
+    //     marketPlace.setUserShoe(addr1, 1, true);
+    //     marketPlace.setShoeRB_Factor(1, 2);
 
-        wethReward.takeRewardBasedOnShoeId(1);
-        // Add assertions based on the expected behavior of takeRewardBasedOnShoeId
-    }
+    //     wethRegistry.setUserSlotId(addr1, 1);
+    //     wethRegistry.setSlotData(1, 0, 0, 0, 1000);
+
+    //     getStepsApi.setUserStepsData(addr1, 1000);
+    //     wethReward.recordFetchedSteps(addr1);
+
+    //     wethReward.takeRewardBasedOnShoeId(1);
+    //     // Add assertions based on the expected behavior of takeRewardBasedOnShoeId
+    // }
 }

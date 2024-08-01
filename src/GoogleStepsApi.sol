@@ -47,8 +47,8 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
         wethregistry = WethRegistry(_wethregistry);
         s_contractCreationTime = block.timestamp;
         s_distributionTimeStamp = getNext6PM(block.timestamp);
-
     }
+
     /**
     * @dev rewardDistributionTime is 6 PM Daily. 
     */
@@ -60,7 +60,6 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
         }
         return today6PM;
     }
-
     /** 
     * @dev called by automation at 24 hr daily
     */ 
@@ -91,12 +90,12 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
      * @dev called by automation at 24 hr daily
      * this will we passed dynamically at source code
      */ 
-    function getCurrentDayMidnightTimestamp() public returns (uint256) {
+    function getCurrentDayMidnightTimestamp() public view returns (uint256) {
         return _getMidnightTimestamp(block.timestamp);
     }
 
     /**
-     * @dev called by automation at 24 he daily
+     * @dev called by automation at 24 hr daily
      * this will we passed dynamically at source code
      */
     function getPreviousDayMidnightTimestamp() public view returns (uint256) {
@@ -125,7 +124,6 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     }
 
     function sendRequest(string[] calldata args, string memory authToken) external returns (bytes32 requestId) {
-
         uint256 startTimeMillis = getPreviousDayMidnightTimestamp() * 1000;
         uint256 endTimeMillis = getCurrentDayMidnightTimestamp() * 1000;
 

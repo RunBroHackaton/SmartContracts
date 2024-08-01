@@ -31,6 +31,7 @@ contract WethReward {
     uint256 public s_totalStepsByAllUsersInSlot;
     mapping(uint256 => uint256) public s_totalStepsPerSlot;
     mapping(address => uint256) public s_userRewards;
+    mapping(address => bool) public s_claimedReward;
 
     constructor(address _wethToken, address _marketPlace, address _wethRegistry, address _getStepsApi) {
         i_getStepsApi = GetStepsAPI(_getStepsApi);
@@ -49,9 +50,9 @@ contract WethReward {
     }
 
     /**
-     * @dev this function will only be called if the Event from previous function is recorded true on frontend side..
-     * or on frontEnd Side their is time dealy of 30 - 45 secs to call this function after first function
-     */ 
+    * @dev this function will only be called if the Event from previous function is recorded true on frontend side..
+    * or on frontEnd Side their is time dealy of 30 - 45 secs to call this function after first function
+    */ 
     function recordFetchedSteps(address _account) public{
         GetStepsAPI.DailyStepsData memory userStepsDailyData = i_getStepsApi.func_userStepsData(_account);
         uint256 userDailySteps = userStepsDailyData.stepsCount;
@@ -60,17 +61,22 @@ contract WethReward {
         uint256 userSlotId = i_wethRegistry._getUserSlotId(msg.sender);
         s_totalStepsPerSlot[userSlotId] += userDailySteps;
     }
-
     /**
-     * @dev this function will only be called by user to claim his reward.
-     */
-    function takeRewardBasedOnShoeId(uint256 _shoeId) public{
+    * @dev this function will only be called by user to claim his reward.
+    */
+
+    modifier checkIfUserAlreadyClaimedDailyReward(address _account){
+        require(s_claimedReward[_account] == false, "User already claimed");
+        _;
+    }
+    function takeRewardBasedOnShoeId(uint256 _shoeId) checkIfUserAlreadyClaimedDailyReward(msg.sender) public{
         require(i_marketplace.checkUserRegistraction(msg.sender),"User not registered");
         require(i_marketplace.hasPurchasedShoe(msg.sender, _shoeId),"You are not eligible");
 
         uint256 rewardAmount = _calculateRewardOfUserSteps(msg.sender, _shoeId);
         s_userRewards[msg.sender]= rewardAmount;
         i_weth.transferFrom(address(i_wethRegistry), msg.sender, rewardAmount);
+        s_claimedReward[msg.sender] = true;
     }
 
     function _calculateRewardOfUserSteps(address _account, uint256 _shoeId) internal returns(uint256){

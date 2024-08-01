@@ -30,7 +30,7 @@ contract MockGoogleStepsAPI{
     mapping(address => bool) public s_userSendRequest;
 
 
-    constructor(address _wethregistry) FunctionsClient(router) ConfirmedOwner(msg.sender) {
+    constructor(address _wethregistry) {
         wethregistry = WethRegistry(_wethregistry);
         s_contractCreationTime = block.timestamp;
         s_distributionTimeStamp = getNext6PM(block.timestamp);
@@ -82,9 +82,11 @@ contract MockGoogleStepsAPI{
     function sendRequest(string[] calldata args, string memory authToken) public returns(bytes32 requestId){
         s_userSendRequest[msg.sender] = true;
         requestId = bytes32(uint256(uint160(address(msg.sender))));
-        fullfilRequest(requestId, response, err);
+        bytes memory response = bytes("addd");
+        bytes memory err = bytes("addd");
+        fullfillRequest(requestId, response, err);
     }
-    function fullfilRequest(bytes32 requestId, bytes memory response, bytes memory err) public{
+    function fullfillRequest(bytes32 requestId, bytes memory response, bytes memory err) public{
         require(s_userSendRequest[_account] == true, "User not requested");
         _setMockData(_account,_steps);
         s_userSendRequest[msg.sender] = false;

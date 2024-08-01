@@ -1,83 +1,111 @@
-// // SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-// import {Test} from "forge-std/Test.sol";
-// import {GetStepsAPI} from "src/GoogleStepsApi.sol";
-// import {WethRegistry} from "src/PoolModels/WethRegistry.sol";
+import {Test} from "forge-std/Test.sol";
+import {GetStepsAPI} from "src/GoogleStepsApi.sol";
+import {WethRegistry} from "src/PoolModels/WethRegistry.sol";
 
-// contract GetStepsAPITest is Test {
-//     GetStepsAPI private getStepsAPI;
-//     WethRegistry private wethRegistry;
-//     address private constant ROUTER_ADDRESS = 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0;
-//     uint64 private constant SUBSCRIPTION_ID = 3004;
-//     uint32 private constant GAS_LIMIT = 300000;
-//     bytes32 private constant DON_ID = 0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000;
+contract GetStepsAPITest is Test {
+    GetStepsAPI public getStepsAPI;
+    WethRegistry public wethRegistry;
 
-//     function setUp() public {
-//         wethRegistry = new WethRegistry();
-//         getStepsAPI = new GetStepsAPI(address(wethRegistry));
-//     }
+    address public owner = address(0x1);
+    address public user = address(0x2);
 
-//     function testInitialization() public {
-//         assertEq(getStepsAPI.s_distributionTimeStamp(), getStepsAPI.getNext6PM(block.timestamp));
-//     }
+    function setUp() public {
+        wethRegistry = new WethRegistry();
+        getStepsAPI = new GetStepsAPI(address(wethRegistry));
+        vm.prank(owner);
+    }
 
-//     function testSendRequest() public {
-//         string[] memory args = new string[](0);
-//         string memory authToken = "testAuthToken";
-//         bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
+    function testInitializeContract() public {
+        assertEq(getStepsAPI.s_contractCreationTime(), block.timestamp);
+        assertEq(getStepsAPI.s_distributionTimeStamp(), getStepsAPI.getNext6PM(block.timestamp));
+    }
 
-//         // Ensure requestId is not zero
-//         assert(requestId != bytes32(0));
-//         assertEq(getStepsAPI.requestIdToAddress(requestId), address(this));
-//     }
+    function testGetNext6PM() public {
+        uint256 currentTimestamp = block.timestamp;
+        uint256 next6PM = getStepsAPI.getNext6PM(currentTimestamp);
+        uint256 expectedNext6PM = currentTimestamp / 1 days * 1 days + 18 hours;
 
-//     function testFulfillRequest() public {
-//         string[] memory args = new string[](0);
-//         string memory authToken = "testAuthToken";
-//         bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
+        if (currentTimestamp >= expectedNext6PM) {
+            expectedNext6PM += 1 days;
+        }
 
-//         // Mock response
-//         bytes memory response = abi.encode(uint256(1000));
-//         bytes memory error = new bytes(0);
+        assertEq(next6PM, expectedNext6PM);
+    }
 
-//         getStepsAPI.fulfillRequest(requestId, response, error);
+    function testUpdateRewardDistributionTime() public {
+        // Fast forward time to ensure the distribution time has passed
+        vm.warp(getStepsAPI.s_distributionTimeStamp() + 1);
 
-//         // Check if the data is correctly stored
-//         GetStepsAPI.DailyStepsData memory stepsData = getStepsAPI.getLatestUserStepsData(address(this));
-//         assertEq(stepsData.stepsCount, 1000);
-//         assertEq(stepsData.requester, address(this));
-//         assertEq(stepsData.dataType, "daily_steps");
+        getStepsAPI.updateRewardDistributionTime();
+        assertEq(getStepsAPI.s_distributionTimeStamp(), getStepsAPI.getNext6PM(block.timestamp));
+        assertEq(getStepsAPI.totalStepsByAllUsersOnPreviousDay(), 0);
+    }
 
-//         // Ensure total steps count is updated
-//         assertEq(getStepsAPI.totalStepsByAllUsersOnPreviousDay(), 1000);
-//     }
+    function testSendRequest() public {
+        vm.prank(user);
 
-//     function testGetAllDailyStepDataRecords() public {
-//         string[] memory args = new string[](0);
-//         string memory authToken = "testAuthToken";
-//         bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
+        string[] memory args = new string[](0);
+        string memory authToken = "testAuthToken";
 
-//         // Mock response
-//         bytes memory response = abi.encode(uint256(1000));
-//         bytes memory error = new bytes(0);
+        bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
+        assertEq(getStepsAPI.s_lastRequestId(), requestId);
+        assertEq(getStepsAPI.requestIdToAddress(requestId), user);
+    }
 
-//         getStepsAPI.fulfillRequest(requestId, response, error);
+    // function testFulfillRequest() public {
+    //     vm.prank(user);
 
-//         GetStepsAPI.DailyStepsData[] memory stepsDataRecords = getStepsAPI.getAllDailyStepDataRecords();
-//         assertEq(stepsDataRecords.length, 1);
-//         assertEq(stepsDataRecords[0].stepsCount, 1000);
-//         assertEq(stepsDataRecords[0].requester, address(this));
-//         assertEq(stepsDataRecords[0].dataType, "daily_steps");
-//     }
+    //     string[] memory args = new string[](0);
+    //     string memory authToken = "testAuthToken";
 
-//     function testUpdateRewardDistributionTime() public {
-//         // Move forward in time to pass the initial distribution time
-//         vm.warp(block.timestamp + 1 days);
+    //     bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
 
-//         getStepsAPI.updateRewardDistributionTime();
+    //     bytes memory response = abi.encode(uint256(1000));
+    //     bytes memory error = "";
 
-//         // Ensure the distribution time is updated
-//         assertEq(getStepsAPI.s_distributionTimeStamp(), getStepsAPI.getNext6PM(block.timestamp));
-//     }
-// }
+    //     getStepsAPI.fulfillRequest(requestId, response, error);
+
+    //     GetStepsAPI.DailyStepsData memory userSteps = getStepsAPI.func_userStepsData(user);
+    //     assertEq(userSteps.stepsCount, 1000);
+    //     assertTrue(getStepsAPI.hasUserFetchedData(user));
+    //     assertEq(getStepsAPI.totalStepsByAllUsersOnPreviousDay(), 1000);
+    // }
+
+    function testGetAllDailyStepDataRecords() public {
+        vm.prank(user);
+
+        string[] memory args = new string[](0);
+        string memory authToken = "testAuthToken";
+
+        bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
+
+        bytes memory response = abi.encode(uint256(1000));
+        bytes memory error = "";
+
+        getStepsAPI.fulfillRequest(requestId, response, error);
+
+        GetStepsAPI.DailyStepsData[] memory records = getStepsAPI.getAllDailyStepDataRecords();
+        assertEq(records.length, 1);
+        assertEq(records[0].stepsCount, 1000);
+    }
+
+    function testGetLatestUserStepsData() public {
+        vm.prank(user);
+
+        string[] memory args = new string[](0);
+        string memory authToken = "testAuthToken";
+
+        bytes32 requestId = getStepsAPI.sendRequest(args, authToken);
+
+        bytes memory response = abi.encode(uint256(1000));
+        bytes memory error = "";
+
+        getStepsAPI.fulfillRequest(requestId, response, error);
+
+        GetStepsAPI.DailyStepsData memory latestData = getStepsAPI.getLatestUserStepsData(user);
+        assertEq(latestData.stepsCount, 1000);
+    }
+}
