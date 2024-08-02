@@ -11,6 +11,10 @@ import {WethRegistry} from "../PoolModels/WethRegistry.sol";
 import {WethReward} from "../RewardModels/WethRewardModel.sol";
 import {Escrow} from "../Escrow.sol";
 
+// DAO imports
+import {RBGovernor} from "../DAO/RBGovernor.sol";
+import {Lock} from "../DAO/Lock.sol";
+
 interface IWETH {
     function deposit() external payable;
 
@@ -39,8 +43,18 @@ contract DeployContracts is Script {
 
     address public owner;
 
+    // DAOs datas
+    address[] proposers;
+    address[] executors;
+
+    uint256 public constant MIN_DELAY = 3600; // 1 hour - after a vote passes, you have 1 hour before you can enact
+    uint256 public constant QUORUM_PERCENTAGE = 4; // Need 4% of voters to pass
+    uint256 public constant VOTING_PERIOD = 50400; // This is how long voting lasts
+    uint256 public constant VOTING_DELAY = 1; // How many blocks till a proposal vote becomes active
+
+    Lock lock;
+    RBGovernor rbgovernor;
     function run() external {
-        // console.log("OWNER'S BALANCE IN ETH", owner.balance);
         owner = msg.sender;
         vm.startBroadcast(owner);
 
@@ -52,14 +66,27 @@ contract DeployContracts is Script {
         
         GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
         WethReward wethReward = new WethReward(wethAddress, address(marketPlace), payable(address(wethRegistry)), address(getstepsapi));
-        
+
+        // DAO deployments
+        lock = new Lock(MIN_DELAY, proposers, executors);
+        rbgovernor = new RBGovernor(rbToken, lock);
+
+        bytes32 proposerRole = lock.PROPOSER_ROLE();
+        bytes32 executorRole = lock.EXECUTOR_ROLE();
+        bytes32 adminRole = lock.TIMELOCK_ADMIN_ROLE();
+
+        lock.grantRole(proposerRole, address(rbgovernor));
+        lock.grantRole(executorRole, address(0));
+        lock.revokeRole(adminRole, msg.sender);
+
         vm.stopBroadcast();
 
         console.log("RB Token Address", address(rbToken));
         console.log("WethRegistry Address", address(wethRegistry));
         console.log("MarketPlace Address", address(marketPlace));
         console.log("GetStepsApi Address", address(getstepsapi));
-        console.log("Reward Address", address(wethReward));
+        console.log("WethReward Address", address(wethReward));
+        console.log("DAOGoverner Address", address(rbgovernor));
 
     }
 }

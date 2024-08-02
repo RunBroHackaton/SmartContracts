@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 // import {PoolModel2} from "./PoolModels/PoolModel2.sol";
 import {WethRegistry} from "./PoolModels/WethRegistry.sol";
 import {Escrow} from "./Escrow.sol";
+import {RunBroToken} from "./RunBroToken.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -15,6 +16,7 @@ contract MarketPlace {
     IWETH public immutable weth;
     WethRegistry public immutable wethregistry;
     Escrow public immutable escrow;
+    RunBroToken public immutable runbroToken;
 
     struct Shoe {
         uint256 id;
@@ -97,11 +99,12 @@ contract MarketPlace {
         _;
     }
 
-    constructor(address _wethRegistry, address _weth, address payable _escrow) {
+    constructor(address _wethRegistry, address _weth, address payable _escrow, address _runbroToken) {
         s_owner = msg.sender;
         weth = IWETH(_weth);
         wethregistry = WethRegistry(_wethRegistry);
         escrow = Escrow(_escrow);
+        runbroToken = RunBroToken(_runbroToken);
     }
 
     /**
@@ -226,6 +229,14 @@ contract MarketPlace {
         emit Buy(msg.sender, s_orderCount[msg.sender], shoe.id, shoe.RB_Factor, true);    
     }
 
+    /**
+    @dev This function will be called by user, when he have atleast puchased 3 shoes.
+     */
+    function claimrbtokens() public {
+        require(s_numberOfShoeIdsOwnerByUser[msg.sender].length >=3, "You haven't purchased 3 shoes yet!");
+        runbroToken.mint(msg.sender, 1*10**18);
+    }
+
     function setUserHomeAddress(string memory _homeAddress) public {
         s_userHomeAddress[msg.sender] = _homeAddress;
     }
@@ -252,11 +263,9 @@ contract MarketPlace {
         return _id;
     }
 
-
     //------------------------------VIEW FUNCTIONS-----------------------------------------
     //-------------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------------
-
     function getUserHomeAddress(address _account) public view returns(string memory){
         return s_userHomeAddress[_account];
     }
