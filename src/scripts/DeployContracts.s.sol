@@ -29,7 +29,7 @@ interface IWETH {
 contract DeployContracts is Script {
     address public constant wethAddress = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9; // On Sepolia
     // address public constant wethAddress =
-    //     0x52eF3d68BaB452a294342DC3e5f464d7f610f72E; // On Amoy
+    // 0x52eF3d68BaB452a294342DC3e5f464d7f610f72E; // On Amoy
     uint256 public initialSupply = 1000000 * 10 ** 18;
     uint256 public initial_rbTokens_inPool = 10000 * 10 ** 18;
     uint256 public initial_weth_inPool = 10000 * 10 ** 18;
@@ -40,41 +40,26 @@ contract DeployContracts is Script {
     address public owner;
 
     function run() external {
-        // // console.log("OWNER'S BALANCE IN ETH", owner.balance);
-        // owner = msg.sender;
-        // vm.startBroadcast(owner);
+        // console.log("OWNER'S BALANCE IN ETH", owner.balance);
+        owner = msg.sender;
+        vm.startBroadcast(owner);
 
-        // RunBroToken rbToken = new RunBroToken(initialSupply);
-        // PoolModel2 pool = new PoolModel2(wethAddress, address(rbToken));
-        // rbToken.approve(address(pool), initial_rbTokens_inPool);
-        // Escrow escrow = new Escrow();
-        // IWETH(wethAddress).approve(address(pool), initial_weth_inPool);
+        RunBroToken rbToken = new RunBroToken(initialSupply);
+        Escrow escrow = new Escrow();
 
-
-        // pool.setIntialBalanceOfpool(initial_rbTokens_inPool);
-
-        // console.log(
-        //     "Amount of WETH in Pool",
-        //     IWETH(wethAddress).balanceOf(address(pool))
-        // );
-        // console.log(
-        //     "Amount of RBToken in Pool",
-        //     rbToken.balanceOf(address(pool))
-        // );
-
-        // MarketPlace marketPlace = new MarketPlace(payable(address(pool)), payable(wethAddress), payable(address(escrow)));
-        // WethRegistry wethRegistry = new WethRegistry();
-        // GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
-        // WethReward wethReward = new WethReward(wethAddress, address(marketPlace), address(wethRegistry), address(getstepsapi));
-        // Reward reward = new Reward(address(rbToken), address(marketPlace), address(pool), address(getstepsapi));
+        WethRegistry wethRegistry = new WethRegistry();
+        MarketPlace marketPlace = new MarketPlace(address(wethRegistry), wethAddress, payable(address(escrow)));
         
-        // vm.stopBroadcast();
+        GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
+        WethReward wethReward = new WethReward(wethAddress, address(marketPlace), payable(address(wethRegistry)), address(getstepsapi));
+        
+        vm.stopBroadcast();
 
-        // console.log("RB Token Address", address(rbToken));
-        // console.log("Pool Address", address(pool));
-        // console.log("Marketplace Address", address(marketPlace));
-        // console.log("getStepsApi Address", address(getstepsapi));
-        // console.log("Reward Address", address(reward));
+        console.log("RB Token Address", address(rbToken));
+        console.log("WethRegistry Address", address(wethRegistry));
+        console.log("MarketPlace Address", address(marketPlace));
+        console.log("GetStepsApi Address", address(getstepsapi));
+        console.log("Reward Address", address(wethReward));
 
     }
 }

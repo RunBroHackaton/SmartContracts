@@ -97,7 +97,7 @@ contract MarketPlace {
         _;
     }
 
-    constructor(address payable _wethRegistry, address payable _weth, address payable _escrow) {
+    constructor(address _wethRegistry, address _weth, address payable _escrow) {
         s_owner = msg.sender;
         weth = IWETH(_weth);
         wethregistry = WethRegistry(_wethRegistry);

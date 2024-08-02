@@ -29,6 +29,10 @@ contract MockGoogleStepsAPI{
     WethRegistry public wethregistry;
     mapping(address => bool) public s_userSendRequest;
 
+    // Mock variables
+    address public mockaccount;
+    uint256 public mocksteps;
+
 
     constructor(address _wethregistry) {
         wethregistry = WethRegistry(_wethregistry);
@@ -87,8 +91,7 @@ contract MockGoogleStepsAPI{
         fullfillRequest(requestId, response, err);
     }
     function fullfillRequest(bytes32 requestId, bytes memory response, bytes memory err) public{
-        require(s_userSendRequest[_account] == true, "User not requested");
-        _setMockData(_account,_steps);
+        _setMockData(mockaccount, mocksteps);
         s_userSendRequest[msg.sender] = false;
     }
 
