@@ -12,8 +12,8 @@ import {WethReward} from "../RewardModels/WethRewardModel.sol";
 import {Escrow} from "../Escrow.sol";
 
 // DAO imports
-import {RBGovernor} from "../DAO/RBGovernor.sol";
-import {Lock} from "../DAO/Lock.sol";
+import {RBGovernor} from "dao-submodule/src/RBGovernor.sol";
+import {Lock} from "dao-submodule/src/Lock.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -62,7 +62,7 @@ contract DeployContracts is Script {
         Escrow escrow = new Escrow();
 
         WethRegistry wethRegistry = new WethRegistry();
-        MarketPlace marketPlace = new MarketPlace(address(wethRegistry), wethAddress, payable(address(escrow)));
+        MarketPlace marketPlace = new MarketPlace(address(wethRegistry), wethAddress, payable(address(escrow)), address(rbToken));
         
         GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
         WethReward wethReward = new WethReward(wethAddress, address(marketPlace), payable(address(wethRegistry)), address(getstepsapi));

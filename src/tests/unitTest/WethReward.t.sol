@@ -9,6 +9,7 @@ import {WethRegistry} from "src/PoolModels/WethRegistry.sol";
 import {Escrow} from "src/Escrow.sol";
 import {MockWETH} from "src/tests/mocks/MockWETH.sol";
 import {MockGoogleStepsAPI} from "src/tests/mocks/MockGoogleStepsAPI.sol";
+import {RunBroToken} from "src/RunBroToken.sol";
 
 
 contract WethRewardTest is Test {
@@ -18,6 +19,7 @@ contract WethRewardTest is Test {
     Escrow public escrow;
     MockWETH public mweth;
     MockGoogleStepsAPI public mockgetStepsApi;
+    RunBroToken public rbtoken;
     address public owner;
     address public addr1;
     address public addr2;
@@ -28,10 +30,11 @@ contract WethRewardTest is Test {
         addr2 = address(0x2);
 
         // Deploy contracts
+        rbtoken = new RunBroToken(10000);
         wethRegistry = new WethRegistry();
         mockgetStepsApi = new MockGoogleStepsAPI(address(wethRegistry));
         mweth = new MockWETH();
-        marketPlace = new MarketPlace(payable(address(wethRegistry)), payable(address(mweth)), payable(address(escrow))); 
+        marketPlace = new MarketPlace(payable(address(wethRegistry)), payable(address(mweth)), payable(address(escrow)), address(rbtoken)); 
         wethReward = new WethReward(address(mweth), address(marketPlace), address(wethRegistry), address(mockgetStepsApi));
     }
 

@@ -7,19 +7,21 @@ import {WethRegistry} from "src/PoolModels/WethRegistry.sol";
 import {MockWETH} from "src/tests/mocks/MockWETH.sol";
 import {Escrow} from "src/Escrow.sol";
 import {console} from "forge-std/console.sol";
-
+import {RunBroToken} from "src/RunBroToken.sol";
 
 contract MarketplaceTest is Test {
     MarketPlace marketplace;
     WethRegistry wethRegistry;
     MockWETH mweth;
     Escrow escrow;
+    RunBroToken rbtoken;
     address[] private usersABC;
     function setUp() public {
         wethRegistry = new WethRegistry();
         mweth = new MockWETH();
         escrow = new Escrow();
-        marketplace = new MarketPlace(payable(address(wethRegistry)), payable(address(mweth)), payable(address(escrow))); 
+        rbtoken = new RunBroToken(100000);
+        marketplace = new MarketPlace(payable(address(wethRegistry)), payable(address(mweth)), payable(address(escrow)), address(rbtoken)); 
     }
 
     function testList() public {
