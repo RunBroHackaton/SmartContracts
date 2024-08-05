@@ -9,6 +9,9 @@ contract WethRegistry is AutomationCompatibleInterface{
     uint256 constant SCALE = 10**3;
     uint256 distributionTimeStamp;
     
+    /**
+     * Slots are where 100 users will be stored, next 100 in other slot.    
+     */
     struct Slot{
         uint256 slotId;
         uint256 numberOfUsers;

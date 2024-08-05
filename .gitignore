@@ -14,3 +14,9 @@ docs/
 .env
 .env.local
 broadcast/
+
+# Node Modules
+node_modules/
+
+# lib
+lib/
