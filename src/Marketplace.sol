@@ -246,7 +246,7 @@ contract MarketPlace {
 
         s_shoes[_orderId].confirmationByBuyer = true;
     }
-    function _confirmDeliveryOfShoeBySeller(uint256 _orderId) internal {
+    function confirmDeliveryOfShoeBySeller(uint256 _orderId) public {
         require(s_shoes[_orderId].payedToSeller == false, "Payment already done");
         require(s_shoes[_orderId].confirmationBySeller == false, "Shoe already delivered");
         require(s_shoes[_orderId].confirmationByBuyer == true, "Buyer has not confirmed yet");

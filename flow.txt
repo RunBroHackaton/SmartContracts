@@ -1,0 +1,68 @@
+# Frontend Interaction functions.
+
+Contract - Marketplace.sol
+
+
+------------------SELLER/COMPANY-------------------
+# 1 - Integrate gmail account to metamask address {If account abstraction is not used}
+function mapEmailToAddress(string calldata _email, address _account) external{}
+
+# 2 - Register to platform [If DAO Not Used]
+function SellerRegisteration(uint256 _creditCardNumber) public{}
+
+# 3 - List the shoes
+function list(
+    string memory _name,
+    string memory _brand,
+    string memory _image,
+    uint256 _cost,
+    uint256 _RB_Factor,
+    uint256 _quantity
+) public payable {}
+
+# 4 - Confirmation by seller/ comapny that shoe has been delivered to buyer home address
+function confirmDeliveryOfShoeBySeller(uint256 _orderId) public{}
+
+
+-------------------BUYER-----------------------------------------
+# 1 - Integrate gmail account to metamask address {If account abstraction is not used}
+function mapEmailToAddress(string calldata _email, address _account) external {}
+
+# 2 - Buy function called by user.
+function buy(uint256 _id) public payable shoeValidity(_id) {}
+
+# 3 - If buyer has purchased more than 3 shoes, this can be called.
+function claimrbtokens() public {}
+
+# 4 - function setUserHomeAddress(string memory _homeAddress) public {}
+
+# 5 - function confirmDeliveryOfShoeByUser(uint256 _orderId) public{}
+
+# 6 - If user owns more than 1 shoe
+function selectShoe(uint256 _id) public returns(uint256) {}
+
+
+Contract - Wethregistry.sol
+NOTHING TO CALLED HERE BY BUYER OR SELLER.
+
+Contract - WethRewardModel.sol
+
+# 1 - This function will be called by user to retrive his steps, this can be only called once a day.
+function sendRequestToFetchSteps(string memory authToken) public{}
+
+# 2 - This function will only be called if the Event from previous function is recorded true on frontend side
+      or on frontEnd Side their is time dealy of 30 - 45 secs to call this function after first function. 
+function recordFetchedSteps(address _account) public{}
+
+# 3 - Claim and take the weth amount/ rewrad.
+function takeRewardBasedOnShoeId(uint256 _shoeId) checkIfUserAlreadyClaimedDailyReward(msg.sender) public {}
+
+# 4 - To show the reward of user on dashboard.
+function getRewardDataOfUsers(address _account) public view returns(uint256)
+
+Contract - Escrow.sol
+NOTHING TO BE CALLED BY SELLER OR BUYER
+
+Contract - Any other Contract
+NOTHING TO BE CALLED BY SELLER OR BUYER
+
