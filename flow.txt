@@ -23,7 +23,6 @@ function list(
 # 4 - Confirmation by seller/ comapny that shoe has been delivered to buyer home address
 function confirmDeliveryOfShoeBySeller(uint256 _orderId) public{}
 
-
 -------------------BUYER-----------------------------------------
 # 1 - Integrate gmail account to metamask address {If account abstraction is not used}
 function mapEmailToAddress(string calldata _email, address _account) external {}
@@ -41,10 +40,10 @@ function claimrbtokens() public {}
 # 6 - If user owns more than 1 shoe
 function selectShoe(uint256 _id) public returns(uint256) {}
 
-
+----------------------------------------------------------------------------------------------------
 Contract - Wethregistry.sol
 NOTHING TO CALLED HERE BY BUYER OR SELLER.
-
+----------------------------------------------------------------------------------------------------
 Contract - WethRewardModel.sol
 
 # 1 - This function will be called by user to retrive his steps, this can be only called once a day.
@@ -59,9 +58,29 @@ function takeRewardBasedOnShoeId(uint256 _shoeId) checkIfUserAlreadyClaimedDaily
 
 # 4 - To show the reward of user on dashboard.
 function getRewardDataOfUsers(address _account) public view returns(uint256)
-
+-----------------------------------------------------------------------------------------------
 Contract - Escrow.sol
 NOTHING TO BE CALLED BY SELLER OR BUYER
+-----------------------------------------------------------------------------------------------
+Contract - RBGovernor.sol
+# 1st
+isEligibleForRegistration(address target)
+---true-> seller can list
+---false-> no they can't below function is called
+proposeRegistrationEligibility(address target, string memory description)
+
+# 2nd or 1st
+addNewDAO_Member(address _account)
+
+# 3rd
+castVote(uint256 proposalId, uint8 support)
+
+# 4th check voting status of proposal
+state(uint256 proposalId)
+
+# 5th check if seller is finally eligible or not
+isEligibleForRegistration(address target)
+
 
 Contract - Any other Contract
 NOTHING TO BE CALLED BY SELLER OR BUYER
