@@ -81,7 +81,9 @@ state(uint256 proposalId)
 # 5th check if seller is finally eligible or not
 isEligibleForRegistration(address target)
 
-
+-----------------------------------------------------------------------------------------------
+Contract - KYC.sol
+All 4 functions are straight forward.
+-----------------------------------------------------------------------------------------------
 Contract - Any other Contract
 NOTHING TO BE CALLED BY SELLER OR BUYER
-

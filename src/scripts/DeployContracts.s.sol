@@ -14,6 +14,7 @@ import {Escrow} from "../Escrow.sol";
 // DAO imports
 import {RBGovernor} from "dao-submodule/src/RBGovernor.sol";
 import {Lock} from "dao-submodule/src/Lock.sol";
+import {KYC} from "../KYC.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -54,6 +55,7 @@ contract DeployContracts is Script {
 
     Lock lock;
     RBGovernor rbgovernor;
+    KYC kyc;
     function run() external {
         owner = msg.sender;
         vm.startBroadcast(owner);
@@ -71,6 +73,8 @@ contract DeployContracts is Script {
         lock = new Lock(MIN_DELAY, proposers, executors);
         rbgovernor = new RBGovernor(rbToken, lock);
 
+        kyc = new KYC(payable(address(rbgovernor)));
+
         bytes32 proposerRole = lock.PROPOSER_ROLE();
         bytes32 executorRole = lock.EXECUTOR_ROLE();
         bytes32 adminRole = lock.TIMELOCK_ADMIN_ROLE();
@@ -87,6 +91,7 @@ contract DeployContracts is Script {
         console.log("GetStepsApi Address", address(getstepsapi));
         console.log("WethReward Address", address(wethReward));
         console.log("DAOGoverner Address", address(rbgovernor));
+        console.log("KYC Address", address(kyc));
 
     }
 }

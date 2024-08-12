@@ -35,7 +35,7 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
 
 //----CONSTANTS-----------------------------------------------
     address constant router = 0xb83E47C2bC239B3bf370bc41e1459A34b41238D0;
-    uint64 constant subscriptionId = 3004;
+    uint64 constant subscriptionId = 3371;
     uint32 gasLimit = 300000;
     bytes32 constant donId = 0x66756e2d657468657265756d2d7365706f6c69612d3100000000000000000000;
 
