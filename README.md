@@ -17,39 +17,60 @@ Our team is composed of passionate individuals dedicated to making RunBro a succ
 
 ![image](https://github.com/ChainlinkHackaton/SmartContracts/assets/138974329/5b32ca5e-6dfe-4e22-b6d6-1f6b277f2b41)
 
-### 1. Marketplace.sol
+Here’s an enhanced version of the content for your README file:
 
-- Responsible for listing and buying shoes.
-- **Seller**: Lists shoes by specifying price, RB Factor, brand name, and shoe name.
-- **Buyer**: Purchases shoes and becomes eligible to receive RB Tokens.
+---
 
-### 2. RunBroToken.sol (RBT)
+## Components
 
-- The native token of the platform.
-- Rewards are based on the reward model and protocol architecture.
+### 1. **RunBroToken Contract**
+- **Purpose**: Implements an ERC20 token with advanced features like ownership control, permits, and voting.
+- **Key Features**:
+  - Minting and burning capabilities.
+  - Secure transfers restricted to the owner.
+  - Integration with OpenZeppelin's contracts for added functionalities.
 
-### 3. Pool.sol
+### 2. **MarketPlace Contract**
+- **Purpose**: Enables the listing and purchasing of shoes using WETH and RunBroToken.
+- **Key Features**:
+  - User and seller registration.
+  - Order and payment management via escrow.
+  - Activity-based reward distribution.
 
-- Determines the value of RB Tokens.
-- The pool contains two tokens: WETH (wrapped Ether) and RB Tokens.
-- Follows the CPAMM (Constant Product Automated Market Maker) strategy.
+### 3. **GetStepsAPI Contract**
+- **Purpose**: Fetches daily step data using Chainlink Functions.
+- **Key Features**:
+  - Retrieves and stores user step data.
+  - Distributes rewards based on steps.
+  - Ensures secure data fetching.
 
-#### How WETH is Supplied?
+### 4. **Escrow Contract**
+- **Purpose**: Secures transactions between buyers and sellers.
+- **Key Features**:
+  - Holds funds until transaction completion.
+  - Releases funds to sellers upon successful transactions.
 
-- WETH is supplied from the platform fee charged when a seller lists a shoe.
+### 5. **WethRegistry Contract**
+- **Purpose**: Manages user slots and rewards based on reserve balance.
+- **Key Features**:
+  - User slot management.
+  - Reserve balance updates.
+  - Reward distribution using Chainlink Automation.
 
-#### How RBT is Supplied?
+### 6. **WethReward Contract**
+- **Purpose**: Manages rewards distribution based on user activity.
+- **Key Features**:
+  - Step data fetching and recording.
+  - WETH-based reward calculations.
+  - Integration with other ecosystem contracts.
 
-- RBT is minted based on the amount of WETH in the pool.
-- If the WETH amount increases, RBT is minted to maintain price stability (TOLERANCE_FACTOR).
+### 7. **DeployContracts Script**
+- **Purpose**: Deploys and initializes all necessary smart contracts.
+- **Key Features**:
+  - Deploys core and DAO-related contracts.
+  - Configures DAO roles and permissions.
 
-### 4. Reward.sol
-
-- Defines the reward strategy for distributing RBT to users based on their steps.
-
-#### How RBT Amount is Determined?
-
-- The amount of RBT distributed is calculated using a formula (not specified here).
+---
 
 ## Chainlink Integration
 
@@ -86,9 +107,6 @@ https://automation.chain.link/
 
 ### Solidity
 - **Smart Contracts**: Our core blockchain functionality is powered by Solidity, the contract-oriented programming language for writing smart contracts on various blockchain platforms.
-- **MarketPlace.sol**: This contract handles the listing and purchasing of shoes on our platform.
-- **RunBroToken.sol**: Manages the RBT token transactions and balances.
-- **Reward.sol**: Calculates rewards for various activities, including purchasing shoes, walking, and affiliate marketing.
 
 ### Foundry
 - **Testing**: We use Foundry, a blazing fast, portable, and modular toolkit for Ethereum application development, to test our smart contracts ensuring security and reliability.
