@@ -9,7 +9,8 @@ Our team is composed of passionate individuals dedicated to making RunBro a succ
 ### Core Contributors
 - **Shubham** - *Smart Contracts* - [github://orangesantra](https://github.com/orangesantra)
 - **Jaka** - *Front-End* - [github://BChainbuddy](https://github.com/BChainbuddy)
-- **Charles** - *Smart Contracts* - [github://SupaMega24](https://github.com/SupaMega24)
+- **Charles** - *Project Manager* - [github://SupaMega24](https://github.com/SupaMega24)
+- **Susan** - *Marketing/Design* - [github://2RowFlow](https://github.com/2RowFlow)
 
 
 ## Contract Architecture
