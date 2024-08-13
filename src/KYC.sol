@@ -5,14 +5,27 @@ import {RBGovernor} from "dao-submodule/src/RBGovernor.sol";
 
 contract KYC {
     RBGovernor rbgovernor;
-    mapping(address => bytes32) public descriptionHash;
+    // mapping(address => bytes32) public descriptionHash;
+
+    address[] targets;
+    uint256[] values;
+    bytes[] calldatas;
+    string description;
     constructor(address payable _rbgovernor) {
         rbgovernor = RBGovernor(_rbgovernor);
     }
 
+    function addTargetAccount(address _account) public {
+        targets.push(_account);
+    }
     // Propose
-    function proposeRegistrationEligibility(address _account, string memory description) public {
-        descriptionHash[_account] = keccak256(abi.encodePacked(description));
+    function propose() public {
+        (bool ok, ) = address(rbgovernor).delegatecall(abi.encodeWithSignature("propose(address[],uint256[],bytes[],string)", targets, values, calldatas, description));
+        require(ok);
+    }
+
+    // Propose
+    function proposeRegistrationEligibility(address _account) public {
         (bool ok, ) = address(rbgovernor).delegatecall(abi.encodeWithSignature("proposeRegistrationEligibility(address,string)", _account, description));
         require(ok);
     }
@@ -24,21 +37,15 @@ contract KYC {
     }
 
     // Queue
-    function queueData(address target) public {
-        address[] memory targets = new address[](0);
-        uint256[] memory values = new uint256[](0);
-        bytes[] memory calldatas = new bytes[](0);
-        targets[0] = target;
-        (bool ok, ) = address(rbgovernor).delegatecall(abi.encodeWithSignature("queue(address[],uint256[],bytes[],bytes32)", targets, values, calldatas, descriptionHash[target]));
+    function queueData() public {
+        bytes32 descriptionHash = keccak256(abi.encodePacked(description));
+        (bool ok, ) = address(rbgovernor).delegatecall(abi.encodeWithSignature("queue(address[],uint256[],bytes[],bytes32)", targets, values, calldatas, descriptionHash));
         require(ok);
     }
     // Execute
-    function executeProposal(address target) public {
-        address[] memory targets = new address[](0);
-        uint256[] memory values = new uint256[](0);
-        bytes[] memory calldatas = new bytes[](0);
-        targets[0] = target;
-        (bool ok, ) = address(rbgovernor).delegatecall(abi.encodeWithSignature("execute(address[],uint256[],bytes[],bytes32)", targets, values, calldatas, descriptionHash[target]));
+    function executeProposal() public {
+        bytes32 descriptionHash = keccak256(abi.encodePacked(description));
+        (bool ok, ) = address(rbgovernor).delegatecall(abi.encodeWithSignature("execute(address[],uint256[],bytes[],bytes32)", targets, values, calldatas, descriptionHash));
         require(ok);
     }
 }

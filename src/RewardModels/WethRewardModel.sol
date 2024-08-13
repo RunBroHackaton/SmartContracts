@@ -80,8 +80,7 @@ contract WethReward {
     }
 
     function _calculateRewardOfUserSteps(address _account, uint256 _shoeId) internal returns(uint256){
-        uint256 RB_Factor = i_marketplace.getShoeRB_Factor(_shoeId);
-        uint256 rewardOfUser = _calculateShareOfUsersStepsInSlot(_account) * RB_Factor ;
+        uint256 rewardOfUser = _calculateShareOfUsersStepsInSlot(_account) + _calculateShareOfUserRBfactorInSlot(_account, _shoeId);
         return rewardOfUser;
     }
     function _calculateShareOfUsersStepsInSlot(address _account) internal returns(uint256){
@@ -89,10 +88,24 @@ contract WethReward {
         uint256 userSlotId = i_wethRegistry._getUserSlotId(_account);
         uint256 totalStepsInSlot = s_totalStepsPerSlot[userSlotId];
         
-        (, , ,uint256 rewardFund) = i_wethRegistry._getSlotData(userSlotId);
+        (, , , ,uint256 rewardFund,) = i_wethRegistry._getSlotData(userSlotId);
 
         s_stepShareOfUser[_account] = (userSteps * rewardFund * SCALING_FACTOR)/totalStepsInSlot;
         return s_stepShareOfUser[_account];
+    }
+
+    function _calculateShareOfUserRBfactorInSlot(address _account, uint256 _shoeid) internal view returns(uint256){
+        uint256 userSlotId = i_wethRegistry._getUserSlotId(_account);
+        (, , address[] memory usersInSlot, uint256[] memory rbfs , , uint256 rbRewardFund) = i_wethRegistry._getSlotData(userSlotId);
+
+        uint256 totalrbfs;
+        uint256 userrbfs = i_marketplace.getShoeRB_Factor(_shoeid);
+
+        for(uint256 i=0; i<100; i++){
+            totalrbfs += rbfs[i];
+        }
+
+        return (userrbfs * rbRewardFund * SCALING_FACTOR)/totalrbfs;
     }
 
     function getRewardDataOfUsers(address _account) public view returns(uint256){

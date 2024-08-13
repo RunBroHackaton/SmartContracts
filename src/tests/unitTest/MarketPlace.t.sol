@@ -147,7 +147,7 @@ contract MarketplaceTest is Test {
         assertEq(wethRegistry.s_reservebalance(), platformFee, "A");
         assertEq(wethRegistry.s_currentNumberOfSlots(), 0, "B");
         assertEq(wethRegistry._getUserSlotId(buyer), 0, "C");
-        (uint256 slotId, uint256 numberOfUsers, address[] memory users, uint256 rewardFund) = wethRegistry._getSlotData(0);
+        (uint256 slotId, uint256 numberOfUsers, address[] memory users, uint256[] memory rbfs, uint256 rewardFund, uint256 rbRewardFund) = wethRegistry._getSlotData(0);
         assertEq(slotId, 0, "D");
         assertEq(numberOfUsers, 1, "E");
         assertEq(users.length, 1, "F");
@@ -189,7 +189,7 @@ contract MarketplaceTest is Test {
         assertEq(wethRegistry.s_reservebalance(), platformFee, "A");
         assertEq(wethRegistry.s_currentNumberOfSlots(), 1, "B");
         assertEq(wethRegistry._getUserSlotId(buyer), 1, "C");
-        (uint256 slotId, uint256 numberOfUsers, address[] memory users, uint256 rewardFund) = wethRegistry._getSlotData(1);
+        (uint256 slotId, uint256 numberOfUsers, address[] memory users, uint256[] memory rbfs, uint256 rewardFund, uint256 rbRewardFund) = wethRegistry._getSlotData(1);
         assertEq(slotId, 1, "D");
         assertEq(numberOfUsers, 1, "E");
         assertEq(users.length, 1, "F");
@@ -228,7 +228,7 @@ contract MarketplaceTest is Test {
         assertEq(wethRegistry.s_reservebalance(), reserveBalance, "A");
         assertEq(wethRegistry.s_currentNumberOfSlots(), 1, "B");
         assertEq(wethRegistry._getUserSlotId(buyer), 1, "C");
-        (uint256 slotId, uint256 numberOfUsers, address[] memory users, uint256 rewardFund) = wethRegistry._getSlotData(1);
+        (uint256 slotId, uint256 numberOfUsers, address[] memory users, uint256[] memory rbfs, uint256 rewardFund, uint256 rbRewardFund) = wethRegistry._getSlotData(1);
         assertEq(slotId, 1, "D");
         assertEq(numberOfUsers, 1, "E");
         assertEq(users.length, 1, "F");

@@ -269,10 +269,10 @@ contract MarketPlace {
     function getUserHomeAddress(address _account) public view returns(string memory){
         return s_userHomeAddress[_account];
     }
+    
     function getSlotIdOfUser(address _account) public view returns (uint256) {
         return s_userInSlot[_account];
     } 
-
 
     function checkUserRegistraction(address _user) public view returns (bool) {
         return s_IsUserRegistred[_user];
