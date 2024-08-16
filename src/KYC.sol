@@ -11,8 +11,14 @@ contract KYC {
     uint256[] values;
     bytes[] calldatas;
     string description;
+
+    mapping(address => string) public sellerDetails;
     constructor(address payable _rbgovernor) {
         rbgovernor = RBGovernor(_rbgovernor);
+    }
+
+    function addDetails(string memory tiktokurl) public {
+        sellerDetails[msg.sender] = tiktokurl;
     }
 
     function addTargetAccount(address _account) public {
@@ -47,5 +53,10 @@ contract KYC {
         bytes32 descriptionHash = keccak256(abi.encodePacked(description));
         (bool ok, ) = address(rbgovernor).delegatecall(abi.encodeWithSignature("execute(address[],uint256[],bytes[],bytes32)", targets, values, calldatas, descriptionHash));
         require(ok);
+    }
+
+    //--------------------------------VIEW FUNCTIONS------------------------------------------------
+    function getsellersDetails(address _account) public view returns(string memory) {
+        return sellerDetails[_account];
     }
 }

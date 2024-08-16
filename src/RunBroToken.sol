@@ -10,7 +10,6 @@ import {ERC20Votes} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Vo
  * @dev ERC downloaded from OpenZeppelin Contracts
  * all functions are available
  */
-
 contract RunBroToken is ERC20, Ownable, ERC20Permit, ERC20Votes{
     constructor(uint256 initialSupply) Ownable() ERC20("RunBroToken", "RBT") ERC20Permit("RunBroToken"){
         _mint(msg.sender, initialSupply);

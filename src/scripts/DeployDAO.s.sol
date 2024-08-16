@@ -17,7 +17,7 @@ contract DeployGovernance is Script {
     address[] executors;
 
     RunBroToken public rbToken; 
-    address public rbTokenAddress = 0xC01Bfb7A1Aa01eA3b3BB84f8d6dCE8Bda79dB468;
+    address public rbTokenAddress = 0x971fFC7b3C511C02E8d4A0ba2332ddA0207c1fb5;
 
     function run() external {
         vm.startBroadcast();

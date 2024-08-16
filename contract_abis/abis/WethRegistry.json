@@ -1,0 +1,184 @@
+{
+  "abi": [
+    {
+      "type": "function",
+      "name": "MAX_USERS_PER_SLOT",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "_addUserToSlot",
+      "inputs": [
+        { "name": "_slotId", "type": "uint256", "internalType": "uint256" },
+        { "name": "_user", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "_getCurrentNumberOfSlots",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "_getReserveBalance",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "_getSlotData",
+      "inputs": [
+        { "name": "_slotId", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [
+        { "name": "", "type": "uint256", "internalType": "uint256" },
+        { "name": "", "type": "uint256", "internalType": "uint256" },
+        { "name": "", "type": "address[]", "internalType": "address[]" },
+        { "name": "", "type": "uint256[]", "internalType": "uint256[]" },
+        { "name": "", "type": "uint256", "internalType": "uint256" },
+        { "name": "", "type": "uint256", "internalType": "uint256" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "_getUserSlotId",
+      "inputs": [
+        { "name": "_user", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "_loadMarketPlace",
+      "inputs": [
+        { "name": "_marketplace", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "_updateReserveBalance",
+      "inputs": [
+        { "name": "_amount", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "checkUpkeep",
+      "inputs": [{ "name": "", "type": "bytes", "internalType": "bytes" }],
+      "outputs": [
+        { "name": "upkeepNeeded", "type": "bool", "internalType": "bool" },
+        { "name": "", "type": "bytes", "internalType": "bytes" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "distributeBalanceToSlot",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "i_marketplace",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "",
+          "type": "address",
+          "internalType": "contract MarketPlace"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "performUpkeep",
+      "inputs": [{ "name": "", "type": "bytes", "internalType": "bytes" }],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "rewardAllotmentToDifferentSlots",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "s_currentNumberOfSlots",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "s_reservebalance",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "s_slot",
+      "inputs": [
+        { "name": "slotId", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [
+        { "name": "slotId", "type": "uint256", "internalType": "uint256" },
+        {
+          "name": "numberOfUsers",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "rewardFund", "type": "uint256", "internalType": "uint256" },
+        { "name": "rbRewardFund", "type": "uint256", "internalType": "uint256" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "s_totalRbFactorsInSlot",
+      "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "s_userSlotId",
+      "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "setRandomSlotData",
+      "inputs": [
+        { "name": "_slotId", "type": "uint256", "internalType": "uint256" },
+        {
+          "name": "_numberOfUsers",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "_users", "type": "address[]", "internalType": "address[]" },
+        { "name": "_rewardFund", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    }
+  ]
+}
