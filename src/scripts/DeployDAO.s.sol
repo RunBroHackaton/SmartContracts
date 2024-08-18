@@ -6,6 +6,7 @@ import {RunBroToken} from "../RunBroToken.sol";
 import {RBGovernor} from "dao-submodule/src/RBGovernor.sol";
 import {Lock} from "dao-submodule/src/Lock.sol";
 import {KYC} from "../KYC.sol";
+import {AccountRegistry} from "../AccountRegistry.sol";
 
 contract DeployGovernance is Script {
     uint256 public constant MIN_DELAY = 3600; // 1 hour
@@ -17,14 +18,22 @@ contract DeployGovernance is Script {
     address[] executors;
 
     RunBroToken public rbToken; 
-    address public rbTokenAddress = 0x971fFC7b3C511C02E8d4A0ba2332ddA0207c1fb5;
-
+    address public rbTokenAddress = 0xd6A94Ba53942E585dF9a42b4B8b573491302a9e1;
     function run() external {
         vm.startBroadcast();
 
+        proposers.push(0x345F30Cea2EF88227C2D301302E17900E1FcDA06);
+        proposers.push(0xd2fdd21AC3553Ac578a69a64F833788f2581BF05);
+
+        executors.push(0x345F30Cea2EF88227C2D301302E17900E1FcDA06);
+        executors.push(0xd2fdd21AC3553Ac578a69a64F833788f2581BF05);
+
         Lock timelock = new Lock(MIN_DELAY, proposers, executors);
         RBGovernor governor = new RBGovernor(rbToken, timelock);
-        KYC kyc = new KYC(payable(address(governor)));
+
+        AccountRegistry ar = new AccountRegistry();
+        KYC kyc = new KYC(payable(address(governor)), address(ar));
+        
 
         bytes32 proposerRole = timelock.PROPOSER_ROLE();
         bytes32 executorRole = timelock.EXECUTOR_ROLE();
@@ -39,5 +48,6 @@ contract DeployGovernance is Script {
         console.log("Lock Address", address(timelock));
         console.log("Governor Address", address(governor));
         console.log("KYC Address", address(kyc));
+        console.log("AccountRegistry Address", address(ar));
     }
 }

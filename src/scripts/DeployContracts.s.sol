@@ -12,7 +12,8 @@ import {Escrow} from "../Escrow.sol";
 // DAO imports
 import {RBGovernor} from "dao-submodule/src/RBGovernor.sol";
 import {Lock} from "dao-submodule/src/Lock.sol";
-import {KYC} from "../KYC.sol";
+// import {KYC} from "../KYC.sol";
+import {KYC} from "../NewKYC.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -41,7 +42,6 @@ contract DeployContracts is Script {
     address public buyer = address(2);
 
     address public owner;
-    KYC kyc;
     function run() external {
         owner = msg.sender;
         vm.startBroadcast(owner);
@@ -50,7 +50,8 @@ contract DeployContracts is Script {
         Escrow escrow = new Escrow();
 
         WethRegistry wethRegistry = new WethRegistry();
-        MarketPlace marketPlace = new MarketPlace(address(wethRegistry), wethAddress, payable(address(escrow)), address(rbToken));
+        KYC kyc = new KYC();
+        MarketPlace marketPlace = new MarketPlace(address(wethRegistry), wethAddress, payable(address(escrow)), address(rbToken), address(kyc));
         
         GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
         WethReward wethReward = new WethReward(wethAddress, address(marketPlace), payable(address(wethRegistry)), address(getstepsapi));
@@ -62,6 +63,7 @@ contract DeployContracts is Script {
         console.log("MarketPlace Address", address(marketPlace));
         console.log("GetStepsApi Address", address(getstepsapi));
         console.log("WethReward Address", address(wethReward));
+        console.log("KYC Address", address(kyc));
     }
 }
 

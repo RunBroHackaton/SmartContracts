@@ -4,6 +4,7 @@ pragma solidity ^0.8.18;
 import {WethRegistry} from "./PoolModels/WethRegistry.sol";
 import {Escrow} from "./Escrow.sol";
 import {RunBroToken} from "./RunBroToken.sol";
+import {KYC} from "./NewKYC.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -13,10 +14,12 @@ interface IWETH {
 
 contract MarketPlace {
     address public s_owner;
+
     IWETH public immutable weth;
     WethRegistry public immutable wethregistry;
     Escrow public immutable escrow;
     RunBroToken public immutable runbroToken;
+    KYC public immutable kyc;
 
     struct Shoe {
         uint256 id;
@@ -99,12 +102,13 @@ contract MarketPlace {
         _;
     }
 
-    constructor(address _wethRegistry, address _weth, address payable _escrow, address _runbroToken) {
+    constructor(address _wethRegistry, address _weth, address payable _escrow, address _runbroToken, address _kyc) {
         s_owner = msg.sender;
         weth = IWETH(_weth);
         wethregistry = WethRegistry(_wethRegistry);
         escrow = Escrow(_escrow);
         runbroToken = RunBroToken(_runbroToken);
+        kyc = KYC(_kyc);
     }
 
     /**
@@ -166,8 +170,8 @@ contract MarketPlace {
         uint256 _RB_Factor,
         uint256 _quantity
     ) public payable {
-        require(s_IsSellerRegistred[msg.sender] == true, "Not registered");
         // Platform Fee is 10% of _cost and 10% of _RB_Factor.
+        require(kyc.checkIfSellerIsRegisteredOrNot(msg.sender), "KYC-Unverified");
         require(msg.value >= (_cost * 10)/100 + (_RB_Factor * 10)/100, "Insufficient fee");
 
         s_shoeCount++;

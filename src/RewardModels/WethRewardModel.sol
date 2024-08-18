@@ -53,18 +53,21 @@ contract WethReward {
     * @dev this function will only be called if the Event from previous function is recorded true on frontend side..
     * or on frontEnd Side their is time dealy of 30 - 45 secs to call this function after first function
     */ 
-    function recordFetchedSteps(address _account) public{
+    function recordFetchedSteps(address _account) public returns(uint256 userStepsInSlot, uint256 totalStepsInSlot){
         GetStepsAPI.DailyStepsData memory userStepsDailyData = i_getStepsApi.func_userStepsData(_account);
         uint256 userDailySteps = userStepsDailyData.stepsCount;
-        s_userSteps[msg.sender] = userDailySteps;
+        s_userSteps[_account] = userDailySteps;
 
-        uint256 userSlotId = i_wethRegistry._getUserSlotId(msg.sender);
+        uint256 userSlotId = i_wethRegistry._getUserSlotId(_account);
         s_totalStepsPerSlot[userSlotId] += userDailySteps;
+
+        userStepsInSlot = userDailySteps;
+        totalStepsInSlot = s_totalStepsPerSlot[userSlotId];
     }
+
     /**
     * @dev this function will only be called by user to claim his reward.
     */
-
     modifier checkIfUserAlreadyClaimedDailyReward(address _account){
         require(s_claimedReward[_account] == false, "User already claimed");
         _;

@@ -8,6 +8,7 @@ import {MockWETH} from "src/tests/mocks/MockWETH.sol";
 import {Escrow} from "src/Escrow.sol";
 import {console} from "forge-std/console.sol";
 import {RunBroToken} from "src/RunBroToken.sol";
+import {KYC} from "src/NewKYC.sol";
 
 contract MarketplaceTest is Test {
     MarketPlace marketplace;
@@ -15,13 +16,14 @@ contract MarketplaceTest is Test {
     MockWETH mweth;
     Escrow escrow;
     RunBroToken rbtoken;
+    KYC kyc;
     address[] private usersABC;
     function setUp() public {
         wethRegistry = new WethRegistry();
         mweth = new MockWETH();
         escrow = new Escrow();
         rbtoken = new RunBroToken(100000);
-        marketplace = new MarketPlace(payable(address(wethRegistry)), payable(address(mweth)), payable(address(escrow)), address(rbtoken)); 
+        marketplace = new MarketPlace(payable(address(wethRegistry)), payable(address(mweth)), payable(address(escrow)), address(rbtoken), address(kyc)); 
     }
 
     function testList() public {

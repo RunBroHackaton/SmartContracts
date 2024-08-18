@@ -3,9 +3,11 @@ pragma solidity ^0.8.18;
 
 import {RBGovernor} from "dao-submodule/src/RBGovernor.sol";
 import {IGovernor} from "openzeppelin-contracts/contracts/governance/IGovernor.sol";
+import {AccountRegistry} from "./AccountRegistry.sol";
 
 contract KYC {
     RBGovernor rbgovernor;
+    AccountRegistry accountRegistry;
     // mapping(address => bytes32) public descriptionHash;
 
     address[] targets;
@@ -13,11 +15,15 @@ contract KYC {
     bytes[] calldatas;
     string description;
 
+    address[] public abc;
+
     uint256 public seller_counter;
     uint256 public proposal_counter;
 
     mapping(address => string) public sellerDetails;
     mapping(address => uint256) public proposalIdOfSeller;
+    
+    address[] public proposedAddressArray;
 
     enum ProposalState {
         Pending,
@@ -29,8 +35,9 @@ contract KYC {
         Expired,
         Executed
     }
-    constructor(address payable _rbgovernor) {
+    constructor(address payable _rbgovernor, address _accountRegistry) {
         rbgovernor = RBGovernor(_rbgovernor);
+        accountRegistry = AccountRegistry(_accountRegistry);
     }
 
     function addDetails(string memory tiktokurl) public {
@@ -39,20 +46,41 @@ contract KYC {
     }
 
     function addTargetAccount(address _account) internal {
-        targets.push(_account);
+        abc.push(_account);
         seller_counter++;
     }
 
-    function myFunction() public pure returns (uint[] memory) {
-        uint[] memory myArray = new uint[](1);
-        myArray[0] = 42; // Assign a value to the single element
-        return myArray;
+    function propose1() public returns(uint256 proposalId){
+        targets.push(address(accountRegistry));
+        description = "abc";
+        values.push(0);
+
+        address currentSeller = abc[proposal_counter];
+
+        bytes memory encodedFunctionCall = abi.encodeWithSignature("addUserToPlatform(address)", currentSeller);
+        calldatas.push(encodedFunctionCall);
+
+        (bool ok, bytes memory returnData) = address(rbgovernor).delegatecall(
+            abi.encodeWithSignature("propose(address[],uint256[],bytes[],string)", targets, values, calldatas, description)
+        );
+
+        require(ok, "Delegate Call failed");
+        proposal_counter++;
+        proposalId = abi.decode(returnData, (uint256));
+        proposalIdOfSeller[currentSeller] = proposalId;
     }
+
     // Propose
     function propose() public returns(uint256 proposalId){
         require(proposal_counter<=seller_counter,"wrong-arg");
         address[] memory myArray = new address[](1);
         myArray[0] = targets[proposal_counter];
+
+        proposedAddressArray.push(myArray[0]);
+
+        description = "abc";
+        values.push(0);
+        calldatas.push("");
 
         (bool ok, bytes memory returnData) = address(rbgovernor).delegatecall(
             abi.encodeWithSignature("propose(address[],uint256[],bytes[],string)", myArray, values, calldatas, description)
@@ -76,8 +104,11 @@ contract KYC {
 
     // Queue
     function queueData() public {
+        address[] memory myArray = new address[](1);
+        myArray[0] = targets[proposal_counter];
+
         bytes32 descriptionHash = keccak256(abi.encodePacked(description));
-        (bool ok, ) = address(rbgovernor).delegatecall(abi.encodeWithSignature("queue(address[],uint256[],bytes[],bytes32)", targets, values, calldatas, descriptionHash));
+        (bool ok, ) = address(rbgovernor).delegatecall(abi.encodeWithSignature("queue(address[],uint256[],bytes[],bytes32)", myArray, values, calldatas, descriptionHash));
         require(ok);
     }
     // Execute
@@ -98,6 +129,10 @@ contract KYC {
     //--------------------------------VIEW FUNCTIONS------------------------------------------------
     //----------------------------------------------------------------------------------------------
     //----------------------------------------------------------------------------------------------
+
+    function getAllTheElementsInTargetArray() public view returns(address[] memory){
+        return targets;
+    }
     function getsellersDetails(address _account) public view returns(string memory) {
         return sellerDetails[_account];
     }
@@ -105,4 +140,10 @@ contract KYC {
     function getProposalIdOfSeller(address _account) public view returns(uint256){
         return proposalIdOfSeller[_account];
     }
+
+    function getAllProposedAccounts() public view returns(address[] memory){
+        return proposedAddressArray;
+    }
+
+    
 }
