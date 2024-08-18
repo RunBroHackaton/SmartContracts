@@ -22,13 +22,13 @@ contract WethReward {
 
     mapping(address => uint256) public s_startingTime;
     // user => time => numberOfSteps till that time
-    mapping(address => mapping(uint256 => uint256)) public s_userStepsAtMoment;
+    // mapping(address => mapping(uint256 => uint256)) public s_userStepsAtMoment;
 
     mapping(address => uint256) public s_userSteps;
     mapping(address => uint256) public s_stepShareOfUser;
 
     //Slot analysis
-    uint256 public s_totalStepsByAllUsersInSlot;
+    // uint256 public s_totalStepsByAllUsersInSlot;
     mapping(uint256 => uint256) public s_totalStepsPerSlot;
     mapping(address => uint256) public s_userRewards;
     mapping(address => bool) public s_claimedReward;
@@ -46,7 +46,9 @@ contract WethReward {
     function sendRequestToFetchSteps(string memory authToken) public{
         string[] memory args = new string[](1);
         args[0] = "0";
-        i_getStepsApi.sendRequest(args, authToken);
+        (bool success, bytes memory data) = address(i_getStepsApi).delegatecall(
+            abi.encodeWithSignature("sendRequest(string[],string)", args, authToken)
+         );
     }
 
     /**
@@ -63,6 +65,7 @@ contract WethReward {
 
         userStepsInSlot = userDailySteps;
         totalStepsInSlot = s_totalStepsPerSlot[userSlotId];
+
     }
 
     /**
@@ -111,15 +114,27 @@ contract WethReward {
         return (userrbfs * rbRewardFund * SCALING_FACTOR)/totalrbfs;
     }
 
-    function getRewardDataOfUsers(address _account) public view returns(uint256){
-        return s_userRewards[_account];
-    }
-
     function createMockData(
         address _mock_account,
         uint256 _mock_shoeId,
         uint256 _mock_steps
     ) public {}
+
+    //------------------------------------VIEW-FUNCTION------------------------------------------
+    //-------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------
+
+    function getStepsOfUserInSlot(address _account) public view returns(uint256){
+        return s_userSteps[_account];
+    }
+
+    function getTotalStepsInSlot(uint256 _slotId) public view returns(uint256){
+        return s_totalStepsPerSlot[_slotId];
+    }
+
+    function getRewardDataOfUsers(address _account) public view returns(uint256){
+        return s_userRewards[_account];
+    }
 }
 
 interface IERC20 {

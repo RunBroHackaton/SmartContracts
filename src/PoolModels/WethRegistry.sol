@@ -3,6 +3,8 @@ pragma solidity ^0.8.18;
 
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 import {MarketPlace} from "../Marketplace.sol";
+import "forge-std/console.sol";
+
 contract WethRegistry is AutomationCompatibleInterface{
     uint256 public s_reservebalance;
     uint256 public s_currentNumberOfSlots;
@@ -49,15 +51,19 @@ contract WethRegistry is AutomationCompatibleInterface{
             s_slot[latestSlotNumber].numberOfUsers++;
             s_userSlotId[_user] = latestSlotNumber;
         } else {
+            uint256[] memory shoesByUser = i_marketplace.getShoeIdsOwnedByUser(_user);
+            uint256 mostOldestShoeId = shoesByUser[0];
+            uint256 rbFactor = i_marketplace.getShoeRB_Factor(mostOldestShoeId);
+            
             s_slot[_slotId].users.push(_user);
-            s_slot[_slotId].rbfs.push(i_marketplace.getShoeRB_Factor(i_marketplace.getShoeIdsOwnedByUser(_user)[0]));
+            s_slot[_slotId].rbfs.push(rbFactor);
             s_slot[_slotId].numberOfUsers++;
             s_userSlotId[_user] = _slotId;
         }
     }
 
     function _updateSlotCountAndCreateNewSlot() internal {
-        require(s_slot[s_currentNumberOfSlots].numberOfUsers >= MAX_USERS_PER_SLOT, "Slot is not full yet");
+        // require(s_slot[s_currentNumberOfSlots].numberOfUsers >= MAX_USERS_PER_SLOT, "Slot is not full yet");
         s_currentNumberOfSlots++;
         _createSlot(s_currentNumberOfSlots);
     }
@@ -66,11 +72,21 @@ contract WethRegistry is AutomationCompatibleInterface{
         s_reservebalance += _amount;
     }
 
-    function setRandomSlotData(uint256 _slotId, uint256 _numberOfUsers, address[] memory _users, uint256 _rewardFund) public {
+    function setRandomSlotData(
+        uint256 _slotId, 
+        uint256 _numberOfUsers, 
+        address[] memory _users, 
+        uint256[] memory _rbfs, 
+        uint256 _rewardFund, 
+        uint256 _rbrewardFund) public {
         s_slot[_slotId].slotId = _slotId;
         s_slot[_slotId].numberOfUsers = _numberOfUsers;
         s_slot[_slotId].users = _users;
         s_slot[_slotId].rewardFund = _rewardFund;
+        s_slot[_slotId].rbfs = _rbfs;
+        s_slot[_slotId].rbRewardFund = _rbrewardFund;
+
+
     }
 
     // This function will be called by chainlink automation.
@@ -80,7 +96,7 @@ contract WethRegistry is AutomationCompatibleInterface{
         uint256 rewardFundBasedOnSteps = (80 * balancePerSlot)/100;
         uint256 rewardFundBasedOnRBFactor = (20 * balancePerSlot)/100;
 
-        for (uint256 i=1; i<=s_currentNumberOfSlots; i++){
+        for (uint256 i=0; i<=s_currentNumberOfSlots+1; i++){
             s_slot[i].rewardFund = rewardFundBasedOnSteps;
             s_slot[i].rbRewardFund = rewardFundBasedOnRBFactor;       
         }
@@ -121,7 +137,7 @@ contract WethRegistry is AutomationCompatibleInterface{
     }
 
     function _getCurrentNumberOfSlots() public view returns(uint256){
-        return s_currentNumberOfSlots;
+        return s_currentNumberOfSlots+1;
     }
 
     function rewardAllotmentToDifferentSlots() public view returns(uint256){

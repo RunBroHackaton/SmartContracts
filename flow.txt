@@ -87,3 +87,22 @@ All 4 functions are straight forward.
 -----------------------------------------------------------------------------------------------
 Contract - Any other Contract
 NOTHING TO BE CALLED BY SELLER OR BUYER
+-----------------------------------------------------------------------------------------------
+
+REWARD FLOW
+
+1. Contract GoogleStepsAPI.sol - `sendRequest(string authToken)` function will be called by user
+2. Contract WethRewardModel.sol - `recordFetchedSteps(address _account)` function will be called by user [CALL THIS AFTER 1 MINUTE AS CHAINLINK FUNCTIONS ARE SLOW]
+3. Contract WethRewardModel.sol - `takeRewardBasedOnShoeId` funtion is to collect reward in user's wallet.
+4. Contract WethRewardModel.sol - Some View functions may be useful for dashboard.
+    function getStepsOfUserInSlot(address _account) public view returns(uint256){
+        return s_userSteps[_account];
+    }
+
+    function getTotalStepsInSlot(uint256 _slotId) public view returns(uint256){
+        return s_totalStepsPerSlot[_slotId];
+    }
+
+    function getRewardDataOfUsers(address _account) public view returns(uint256){
+        return s_userRewards[_account];
+    }          

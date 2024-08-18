@@ -52,7 +52,7 @@ contract DeployContracts is Script {
         WethRegistry wethRegistry = new WethRegistry();
         KYC kyc = new KYC();
         MarketPlace marketPlace = new MarketPlace(address(wethRegistry), wethAddress, payable(address(escrow)), address(rbToken), address(kyc));
-        
+        wethRegistry._loadMarketPlace(address(marketPlace));
         GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
         WethReward wethReward = new WethReward(wethAddress, address(marketPlace), payable(address(wethRegistry)), address(getstepsapi));
 

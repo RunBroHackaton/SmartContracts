@@ -171,7 +171,7 @@ contract MarketPlace {
         uint256 _quantity
     ) public payable {
         // Platform Fee is 10% of _cost and 10% of _RB_Factor.
-        require(kyc.checkIfSellerIsRegisteredOrNot(msg.sender), "KYC-Unverified");
+        // require(kyc.checkIfSellerIsRegisteredOrNot(msg.sender), "KYC-Unverified");
         require(msg.value >= (_cost * 10)/100 + (_RB_Factor * 10)/100, "Insufficient fee");
 
         s_shoeCount++;
@@ -209,9 +209,6 @@ contract MarketPlace {
         require(msg.value >= shoe.cost, "Insufficient payment");
         require(shoe.quantity > 0, "Out of stock");
 
-        uint256 currentSlot = wethregistry.s_currentNumberOfSlots();
-        wethregistry._addUserToSlot(currentSlot, msg.sender);
-
         s_orderCount[msg.sender]++;
         s_orders[msg.sender][s_orderCount[msg.sender]] = Order(block.timestamp, shoe);
 
@@ -223,6 +220,9 @@ contract MarketPlace {
         }
         
         s_numberOfShoeIdsOwnerByUser[msg.sender].push(_id);
+
+        uint256 currentSlot = wethregistry.s_currentNumberOfSlots();
+        wethregistry._addUserToSlot(currentSlot, msg.sender);
 
         //--------------Escrow----------------
         s_shoes[_id].payedToEscrow = true;

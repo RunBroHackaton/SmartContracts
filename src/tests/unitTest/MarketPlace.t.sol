@@ -18,6 +18,7 @@ contract MarketplaceTest is Test {
     RunBroToken rbtoken;
     KYC kyc;
     address[] private usersABC;
+    uint256[] private user123;
     function setUp() public {
         wethRegistry = new WethRegistry();
         mweth = new MockWETH();
@@ -76,6 +77,7 @@ contract MarketplaceTest is Test {
         vm.stopPrank();
 
         vm.startPrank(buyer);
+        wethRegistry._loadMarketPlace(address(marketplace));
         marketplace.buy{value: 1 ether}(1);
 
         // Assert
@@ -143,6 +145,7 @@ contract MarketplaceTest is Test {
         vm.stopPrank();
 
         vm.startPrank(buyer);
+        wethRegistry._loadMarketPlace(address(marketplace));
         marketplace.buy{value: 1 ether}(1);
 
         // Assert
@@ -159,6 +162,12 @@ contract MarketplaceTest is Test {
     function createRandomUsers(uint256 count) internal {
         for (uint256 i = 0; i < count; i++) {
             usersABC.push(address(uint160(uint256(keccak256(abi.encodePacked(i, block.timestamp))))));
+        }
+    }
+
+    function createRandomrbfs(uint256 count) internal {
+        for (uint256 i = 0; i < count; i++) {
+            users123.push(10*(i+1));
         }
     }
 
@@ -180,10 +189,13 @@ contract MarketplaceTest is Test {
         vm.stopPrank();
 
         createRandomUsers(100);
-        wethRegistry.setRandomSlotData(0, 100, usersABC, 0);
+        createRandomrbfs(100);
+        wethRegistry.setRandomSlotData(0, 100, usersABC, user123, 0,0);
 
         vm.startPrank(buyer);
+        wethRegistry._loadMarketPlace(address(marketplace));
         marketplace.buy{value: 1 ether}(1);
+
 
         console.log("Total Number Of Slots", wethRegistry.s_currentNumberOfSlots());
 
@@ -216,9 +228,11 @@ contract MarketplaceTest is Test {
         vm.stopPrank();
 
         createRandomUsers(100);
-        wethRegistry.setRandomSlotData(0, 100, usersABC, 0);
+        createRandomrbfs(100);
+        wethRegistry.setRandomSlotData(0, 100, usersABC, user123, 0,0);
 
         vm.startPrank(buyer);
+        wethRegistry._loadMarketPlace(address(marketplace));
         marketplace.buy{value: 1 ether}(1);
 
         wethRegistry.distributeBalanceToSlot();
@@ -231,10 +245,13 @@ contract MarketplaceTest is Test {
         assertEq(wethRegistry.s_currentNumberOfSlots(), 1, "B");
         assertEq(wethRegistry._getUserSlotId(buyer), 1, "C");
         (uint256 slotId, uint256 numberOfUsers, address[] memory users, uint256[] memory rbfs, uint256 rewardFund, uint256 rbRewardFund) = wethRegistry._getSlotData(1);
+        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAA", users[0]);
+        console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBB", rbfs[0]);
         assertEq(slotId, 1, "D");
         assertEq(numberOfUsers, 1, "E");
         assertEq(users.length, 1, "F");
-        assertEq(rewardFund, reserveBalance/2, "G");
+        assertEq(rewardFund, 80*reserveBalance/(2*100), "G");
+        assertEq(rbRewardFund, 20*reserveBalance/(2*100), "H" );
     }
 
 }
