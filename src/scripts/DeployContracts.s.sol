@@ -10,10 +10,9 @@ import {WethReward} from "../RewardModels/WethRewardModel.sol";
 import {Escrow} from "../Escrow.sol";
 
 // DAO imports
-import {RBGovernor} from "dao-submodule/src/RBGovernor.sol";
-import {Lock} from "dao-submodule/src/Lock.sol";
-// import {KYC} from "../KYC.sol";
 import {KYC} from "../NewKYC.sol";
+
+
 
 interface IWETH {
     function deposit() external payable;
@@ -32,8 +31,7 @@ interface IWETH {
 
 contract DeployContracts is Script {
     address public constant wethAddress = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9; // On Sepolia
-    // address public constant wethAddress =
-    // 0x52eF3d68BaB452a294342DC3e5f464d7f610f72E; // On Amoy
+    // address public constant wethAddress = 0x52eF3d68BaB452a294342DC3e5f464d7f610f72E; // On Amoy
     uint256 public initialSupply = 1000000 * 10 ** 18;
     uint256 public initial_rbTokens_inPool = 10000 * 10 ** 18;
     uint256 public initial_weth_inPool = 10000 * 10 ** 18;
@@ -42,6 +40,24 @@ contract DeployContracts is Script {
     address public buyer = address(2);
 
     address public owner;
+
+    //--------------------------------------------TESTING PURPOSE---------------------------------------------------------
+
+    address[] public usersABC;
+    uint256[] public users123;
+    function createRandomUsers(uint256 count) internal {
+        usersABC.push(0x345F30Cea2EF88227C2D301302E17900E1FcDA06);
+        for (uint256 i = 0; i < count; i++) {
+            usersABC.push(address(uint160(uint256(keccak256(abi.encodePacked(i, block.timestamp))))));
+        }
+    }
+
+    function createRandomrbfs(uint256 count) internal {
+        for (uint256 i = 0; i < count; i++) {
+            users123.push(10*(i+1));
+        }
+    }
+    //--------------------------------------------TESTING PURPOSE---------------------------------------------------------
     function run() external {
         owner = msg.sender;
         vm.startBroadcast(owner);
@@ -55,7 +71,15 @@ contract DeployContracts is Script {
         wethRegistry._loadMarketPlace(address(marketPlace));
         GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));
         WethReward wethReward = new WethReward(wethAddress, address(marketPlace), payable(address(wethRegistry)), address(getstepsapi));
+        wethRegistry._doApprovalToWethReward(wethAddress, address(wethReward));
 
+    //----------------------------------------------TESTING PURPOSE-------------------------------------------------------
+        // createRandomUsers(99);
+        // createRandomrbfs(100);
+        // wethRegistry.setRandomSlotData(0, 100, usersABC, users123, 60000000000,40000000);
+
+        // wethRegistry.distributeBalanceToSlot();
+    //----------------------------------------------TESTING PURPOSE-------------------------------------------------------
         vm.stopBroadcast();
 
         console.log("RB Token Address", address(rbToken));

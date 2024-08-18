@@ -56,7 +56,6 @@ contract WethRewardTest is Test {
         vm.deal(seller, 2 ether);
         vm.deal(buyer, 2 ether);
         vm.startPrank(seller);
-        marketPlace.SellerRegisteration(creditcardNumber);
         marketPlace.list{value: platformFee}("Test Shoe", "Test Brand", "test_image.png", 1 ether, 0.1 ether, 1);
         vm.stopPrank();
 

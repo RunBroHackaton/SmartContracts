@@ -10,6 +10,7 @@ interface IWETH {
     function deposit() external payable;
     function transfer(address to, uint value) external returns (bool);
     function balanceOf(address s_owner) external view returns (uint);
+    function approve(address spender, uint256 amount) external returns (bool);
 }
 
 contract MarketPlace {
@@ -53,11 +54,7 @@ contract MarketPlace {
     mapping(address => uint256) public s_userSelectedShoe;
     mapping(address => bool) public s_IsUserRegistred;
 
-    mapping(address => bool) public s_IsSellerRegistred;
-    mapping(address => uint256) public s_SellerKYC;
-
     uint256 public s_shoeCount;
-    uint[] public s_arrayOfIds;
 
     mapping(address => uint[]) public s_numberOfShoeIdsOwnerByUser;
 
@@ -149,17 +146,6 @@ contract MarketPlace {
 
     /** 
     * @dev
-    * Lister has to call this function first, before calling List function.
-    */
-    function SellerRegisteration(uint256 _creditCardNumber) public {
-        require(s_IsSellerRegistred[msg.sender]==false,"Seller Already registered");
-
-        s_SellerKYC[msg.sender] = _creditCardNumber;
-        s_IsSellerRegistred[msg.sender] = true;
-    }
-
-    /** 
-    * @dev
     * Function to list the shoes
     */
     function list(
@@ -171,7 +157,7 @@ contract MarketPlace {
         uint256 _quantity
     ) public payable {
         // Platform Fee is 10% of _cost and 10% of _RB_Factor.
-        // require(kyc.checkIfSellerIsRegisteredOrNot(msg.sender), "KYC-Unverified");
+        require(kyc.checkIfSellerIsRegisteredOrNot(msg.sender), "KYC-Unverified");
         require(msg.value >= (_cost * 10)/100 + (_RB_Factor * 10)/100, "Insufficient fee");
 
         s_shoeCount++;
@@ -293,10 +279,6 @@ contract MarketPlace {
 
     function getTotalNumberOfListedShoe() public view returns (uint256){
         return s_shoeCount;
-    }
-
-    function KYCdetailsOfLister(address _account) public view returns (uint256){
-        return s_SellerKYC[_account];
     }
 
     /**

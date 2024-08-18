@@ -32,6 +32,7 @@ contract WethReward {
     mapping(uint256 => uint256) public s_totalStepsPerSlot;
     mapping(address => uint256) public s_userRewards;
     mapping(address => bool) public s_claimedReward;
+    mapping(address => bool) public s_rewardCollectedByUser;
 
     constructor(address _wethToken, address _marketPlace, address _wethRegistry, address _getStepsApi) {
         i_getStepsApi = GetStepsAPI(_getStepsApi);
@@ -50,7 +51,6 @@ contract WethReward {
             abi.encodeWithSignature("sendRequest(string[],string)", args, authToken)
          );
     }
-
     /**
     * @dev this function will only be called if the Event from previous function is recorded true on frontend side..
     * or on frontEnd Side their is time dealy of 30 - 45 secs to call this function after first function
@@ -70,7 +70,7 @@ contract WethReward {
 
     /**
     * @dev this function will only be called by user to claim his reward.
-    */
+    */    
     modifier checkIfUserAlreadyClaimedDailyReward(address _account){
         require(s_claimedReward[_account] == false, "User already claimed");
         _;
@@ -82,11 +82,12 @@ contract WethReward {
         uint256 rewardAmount = _calculateRewardOfUserSteps(msg.sender, _shoeId);
         s_userRewards[msg.sender]= rewardAmount;
         i_weth.transferFrom(address(i_wethRegistry), msg.sender, rewardAmount);
-        s_claimedReward[msg.sender] = true;
+        s_rewardCollectedByUser[msg.sender]=true;
     }
 
-    function _calculateRewardOfUserSteps(address _account, uint256 _shoeId) internal returns(uint256){
+    function _calculateRewardOfUserSteps(address _account, uint256 _shoeId) public returns(uint256){
         uint256 rewardOfUser = _calculateShareOfUsersStepsInSlot(_account) + _calculateShareOfUserRBfactorInSlot(_account, _shoeId);
+        s_userRewards[msg.sender]= rewardOfUser;
         return rewardOfUser;
     }
     function _calculateShareOfUsersStepsInSlot(address _account) internal returns(uint256){
@@ -96,40 +97,44 @@ contract WethReward {
         
         (, , , ,uint256 rewardFund,) = i_wethRegistry._getSlotData(userSlotId);
 
-        s_stepShareOfUser[_account] = (userSteps * rewardFund * SCALING_FACTOR)/totalStepsInSlot;
+        // s_stepShareOfUser[_account] = (userSteps * rewardFund * SCALING_FACTOR)/totalStepsInSlot;
+        s_stepShareOfUser[_account] = (userSteps * rewardFund)/totalStepsInSlot;
         return s_stepShareOfUser[_account];
     }
 
     function _calculateShareOfUserRBfactorInSlot(address _account, uint256 _shoeid) internal view returns(uint256){
         uint256 userSlotId = i_wethRegistry._getUserSlotId(_account);
-        (, , address[] memory usersInSlot, uint256[] memory rbfs , , uint256 rbRewardFund) = i_wethRegistry._getSlotData(userSlotId);
+        (, , , uint256[] memory rbfs , , uint256 rbRewardFund) = i_wethRegistry._getSlotData(userSlotId);
 
         uint256 totalrbfs;
         uint256 userrbfs = i_marketplace.getShoeRB_Factor(_shoeid);
 
-        for(uint256 i=0; i<100; i++){
+        for(uint256 i=0; i<rbfs.length; i++){
             totalrbfs += rbfs[i];
         }
 
-        return (userrbfs * rbRewardFund * SCALING_FACTOR)/totalrbfs;
+        // return (userrbfs * rbRewardFund * SCALING_FACTOR)/totalrbfs;
+        return (userrbfs * rbRewardFund)/totalrbfs;
     }
-
-    function createMockData(
-        address _mock_account,
-        uint256 _mock_shoeId,
-        uint256 _mock_steps
-    ) public {}
 
     //------------------------------------VIEW-FUNCTION------------------------------------------
     //-------------------------------------------------------------------------------------------
     //-------------------------------------------------------------------------------------------
 
+    function checkIfUserCollectedRewardOrNot(address _account) public view returns(bool){
+        return s_rewardCollectedByUser[_account];
+    }
+    
     function getStepsOfUserInSlot(address _account) public view returns(uint256){
         return s_userSteps[_account];
     }
 
     function getTotalStepsInSlot(uint256 _slotId) public view returns(uint256){
         return s_totalStepsPerSlot[_slotId];
+    }
+
+    function getStepsShareOfUser(address _account) public view returns(uint256){
+        return s_stepShareOfUser[_account];
     }
 
     function getRewardDataOfUsers(address _account) public view returns(uint256){

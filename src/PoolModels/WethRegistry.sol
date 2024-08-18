@@ -5,6 +5,13 @@ import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/autom
 import {MarketPlace} from "../Marketplace.sol";
 import "forge-std/console.sol";
 
+interface IWETH {
+    function deposit() external payable;
+    function transfer(address to, uint value) external returns (bool);
+    function balanceOf(address s_owner) external view returns (uint);
+    function approve(address spender, uint256 amount) external returns (bool);
+}
+
 contract WethRegistry is AutomationCompatibleInterface{
     uint256 public s_reservebalance;
     uint256 public s_currentNumberOfSlots;
@@ -42,6 +49,11 @@ contract WethRegistry is AutomationCompatibleInterface{
         i_marketplace = MarketPlace(_marketplace);
     }
 
+    function _doApprovalToWethReward(address weth, address wethRewardmodel) public{
+        uint256 max = type(uint256).max;
+        IWETH(weth).approve(wethRewardmodel, max);
+    }
+
     function _addUserToSlot(uint256 _slotId, address _user) public {
         if(s_slot[_slotId].numberOfUsers >= MAX_USERS_PER_SLOT){
             _updateSlotCountAndCreateNewSlot();
@@ -63,7 +75,6 @@ contract WethRegistry is AutomationCompatibleInterface{
     }
 
     function _updateSlotCountAndCreateNewSlot() internal {
-        // require(s_slot[s_currentNumberOfSlots].numberOfUsers >= MAX_USERS_PER_SLOT, "Slot is not full yet");
         s_currentNumberOfSlots++;
         _createSlot(s_currentNumberOfSlots);
     }

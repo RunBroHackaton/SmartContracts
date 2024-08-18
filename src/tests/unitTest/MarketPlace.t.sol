@@ -18,7 +18,7 @@ contract MarketplaceTest is Test {
     RunBroToken rbtoken;
     KYC kyc;
     address[] private usersABC;
-    uint256[] private user123;
+    uint256[] private users123;
     function setUp() public {
         wethRegistry = new WethRegistry();
         mweth = new MockWETH();
@@ -38,7 +38,6 @@ contract MarketplaceTest is Test {
         // Act
         vm.deal(seller, 2 ether);
         vm.startPrank(seller);
-        marketplace.SellerRegisteration(creditcardNumber);
         marketplace.list{value: platformFee}("Test Shoe", "Test Brand", "test_image.png", 1 ether, 0.1 ether, 1);
 
         // Assert
@@ -72,7 +71,6 @@ contract MarketplaceTest is Test {
         vm.deal(seller, 2 ether);
         vm.deal(buyer, 2 ether);
         vm.startPrank(seller);
-        marketplace.SellerRegisteration(creditcardNumber);
         marketplace.list{value: platformFee}("Test Shoe", "Test Brand", "test_image.png", 1 ether, 0.1 ether, 1);
         vm.stopPrank();
 
@@ -116,7 +114,6 @@ contract MarketplaceTest is Test {
         // Act
         vm.deal(seller, 2 ether);
         vm.startPrank(seller);
-        marketplace.SellerRegisteration(creditcardNumber);
         marketplace.list{value: platformFee}("Test Shoe", "Test Brand", "test_image.png", 1 ether, 0.1 ether, 1);
         vm.stopPrank();
 
@@ -138,7 +135,6 @@ contract MarketplaceTest is Test {
         vm.deal(seller, 2 ether);
         vm.deal(buyer, 2 ether);
         vm.startPrank(seller);
-        marketplace.SellerRegisteration(creditcardNumber);
         console.log("Reserve Balance Before Listing", wethRegistry.s_reservebalance());
         marketplace.list{value: platformFee}("Test Shoe", "Test Brand", "test_image.png", 1 ether, 0.1 ether, 1);
         console.log("Reserve Balance After Listing", wethRegistry.s_reservebalance());
@@ -184,13 +180,12 @@ contract MarketplaceTest is Test {
         vm.deal(seller, 2 ether);
         vm.deal(buyer, 2 ether);
         vm.startPrank(seller);
-        marketplace.SellerRegisteration(creditcardNumber);
         marketplace.list{value: platformFee}("Test Shoe", "Test Brand", "test_image.png", 1 ether, 0.1 ether, 1);
         vm.stopPrank();
 
         createRandomUsers(100);
         createRandomrbfs(100);
-        wethRegistry.setRandomSlotData(0, 100, usersABC, user123, 0,0);
+        wethRegistry.setRandomSlotData(0, 100, usersABC, users123, 0,0);
 
         vm.startPrank(buyer);
         wethRegistry._loadMarketPlace(address(marketplace));
@@ -223,13 +218,12 @@ contract MarketplaceTest is Test {
         vm.deal(seller, 2 ether);
         vm.deal(buyer, 2 ether);
         vm.startPrank(seller);
-        marketplace.SellerRegisteration(creditcardNumber);
         marketplace.list{value: platformFee}("Test Shoe", "Test Brand", "test_image.png", 1 ether, 0.1 ether, 1);
         vm.stopPrank();
 
         createRandomUsers(100);
         createRandomrbfs(100);
-        wethRegistry.setRandomSlotData(0, 100, usersABC, user123, 0,0);
+        wethRegistry.setRandomSlotData(0, 100, usersABC, users123, 0,0);
 
         vm.startPrank(buyer);
         wethRegistry._loadMarketPlace(address(marketplace));
@@ -247,6 +241,8 @@ contract MarketplaceTest is Test {
         (uint256 slotId, uint256 numberOfUsers, address[] memory users, uint256[] memory rbfs, uint256 rewardFund, uint256 rbRewardFund) = wethRegistry._getSlotData(1);
         console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAA", users[0]);
         console.log("BBBBBBBBBBBBBBBBBBBBBBBBBBB", rbfs[0]);
+        console.log("CCCCCCCCCCCCCCCCCCCCCCCCCCC", rewardFund);
+        console.log("DDDDDDDDDDDDDDDDDDDDDDDDDDD", rbRewardFund);
         assertEq(slotId, 1, "D");
         assertEq(numberOfUsers, 1, "E");
         assertEq(users.length, 1, "F");
