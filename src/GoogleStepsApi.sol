@@ -42,43 +42,10 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
 //----Reward related Stuff------------------------------------
     uint256 public s_contractCreationTime;
     mapping(address => mapping(uint256 => bool)) public s_IsUserAlreadyLogin;
-    // uint256 public s_distributionTimeStamp;
     constructor(address _wethregistry) FunctionsClient(router) ConfirmedOwner(msg.sender) {
         wethregistry = WethRegistry(_wethregistry);
         s_contractCreationTime = block.timestamp;
-        // s_distributionTimeStamp = getNext6PM(block.timestamp);
     }
-
-    /**
-    * @dev rewardDistributionTime is 6 PM Daily. 
-    */
-    // function getNext6PM(uint256 timestamp) public pure returns (uint256) {
-    //     uint256 currentDay = timestamp / 1 days;
-    //     uint256 today6PM = currentDay * 1 days + 18 hours;
-    //     if (timestamp >= today6PM) {
-    //         today6PM += 1 days;
-    //     }
-    //     return today6PM;
-    // }
-    /** 
-    * @dev called by automation at 24 hr daily
-    */ 
-    // function updateRewardDistributionTime() public {
-    //     require(block.timestamp >= s_distributionTimeStamp, "It's not time yet");
-    //     /** 
-    //     * @dev Reseting user steps data to initial value, if this function is called.
-    //     */ 
-    //     for (uint256 i = 0; i < stepsDataRecords.length; i++) {
-    //             address user = stepsDataRecords[i].requester;
-    //             delete userStepsData[user];
-    //             hasUserFetchedData[user] = false;
-    //     }
-    //     delete stepsDataRecords;
-
-    //     // Reset total steps count
-    //     totalStepsByAllUsersOnPreviousDay = 0;
-    //     s_distributionTimeStamp += 1 days;
-    // }
     
     function _getMidnightTimestamp(uint256 timestamp) internal pure returns (uint256) {
         uint256 currentDay = timestamp / 1 days;
@@ -122,7 +89,10 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
         }
         return string(buffer);
     }
-
+    /**
+     * @dev called by user to get his steps, args and authToken will be taken
+     * from user's google account
+     */
     function sendRequest(string[] calldata args, string memory authToken) external returns (bytes32 requestId) {
         uint256 startTimeMillis = getPreviousDayMidnightTimestamp() * 1000;
         uint256 endTimeMillis = getCurrentDayMidnightTimestamp() * 1000;

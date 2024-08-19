@@ -10,7 +10,7 @@ import {WethReward} from "../RewardModels/WethRewardModel.sol";
 import {Escrow} from "../Escrow.sol";
 
 // DAO imports
-import {KYC} from "../NewKYC.sol";
+import {KYC} from "../DAO-KYC.sol";
 interface IWETH {
     function deposit() external payable;
 
@@ -63,7 +63,7 @@ contract DeployContracts is Script {
         Escrow escrow = new Escrow();
 
         WethRegistry wethRegistry = new WethRegistry();
-        KYC kyc = new KYC();
+        KYC kyc = new KYC(address(rbToken));
         MarketPlace marketPlace = new MarketPlace(address(wethRegistry), wethAddress, payable(address(escrow)), address(rbToken), address(kyc));
         wethRegistry._loadMarketPlace(address(marketPlace));
         GetStepsAPI getstepsapi = new GetStepsAPI(address(wethRegistry));

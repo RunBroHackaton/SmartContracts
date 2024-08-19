@@ -10,7 +10,7 @@ import {Escrow} from "src/Escrow.sol";
 import {MockWETH} from "src/tests/mocks/MockWETH.sol";
 import {MockGoogleStepsAPI} from "src/tests/mocks/MockGoogleStepsAPI.sol";
 import {RunBroToken} from "src/RunBroToken.sol";
-import {KYC} from "src/NewKYC.sol";
+import {KYC} from "src/DAO-KYC.sol";
 
 
 contract WethRewardTest is Test {
@@ -37,7 +37,7 @@ contract WethRewardTest is Test {
         wethRegistry = new WethRegistry();
         mockgetStepsApi = new MockGoogleStepsAPI(address(wethRegistry));
         mweth = new MockWETH();
-        kyc = new KYC();
+        kyc = new KYC(address(rbtoken));
         marketPlace = new MarketPlace(payable(address(wethRegistry)), payable(address(mweth)), payable(address(escrow)), address(rbtoken), address(kyc)); 
         wethReward = new WethReward(address(mweth), address(marketPlace), address(wethRegistry), address(mockgetStepsApi));
     }

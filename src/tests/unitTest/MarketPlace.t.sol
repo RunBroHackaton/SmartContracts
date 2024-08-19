@@ -13,7 +13,7 @@ import {MockWETH} from "src/tests/mocks/MockWETH.sol";
 import {Escrow} from "src/Escrow.sol";
 import {console} from "forge-std/console.sol";
 import {RunBroToken} from "src/RunBroToken.sol";
-import {KYC} from "src/NewKYC.sol";
+import {KYC} from "src/DAO-KYC.sol";
 
 contract MarketplaceTest is Test {
     MarketPlace marketplace;

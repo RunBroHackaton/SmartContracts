@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
+import {RunBroToken} from "./RunBroToken.sol";
+
 contract KYC {
     struct Proposal {
         address proposer;
@@ -29,7 +31,9 @@ contract KYC {
 
     uint256 public votingPeriod = 5 minutes;
 
-    mapping(address => bool) public addUserToPlatform; 
+    mapping(address => bool) public addUserToPlatform;
+
+    RunBroToken public rbToken;
 
     modifier onlyMember() {
         require(members[msg.sender], "Not a DAO member");
@@ -41,8 +45,9 @@ contract KYC {
         _;
     }
 
-    constructor() {
+    constructor(address _rbToken) {
         members[msg.sender] = true;
+        rbToken = RunBroToken(_rbToken);
     }
 
     function addDetails(string memory tiktokurl) public {
@@ -54,6 +59,7 @@ contract KYC {
         abc.push(_account);
         sellerCount++;
     }
+
 // 0xd2fdd21AC3553Ac578a69a64F833788f2581BF05
 
     function addMember(address _member) public onlyMember {
@@ -115,6 +121,10 @@ contract KYC {
     //--------------------------------VIEW FUNCTIONS------------------------------------------------
     //----------------------------------------------------------------------------------------------
     //----------------------------------------------------------------------------------------------
+
+    function checkAmountOfRBT_UserHolds(address _account) public view returns(uint256){
+        return rbToken.balanceOf(_account);
+    }
     function checkIfSellerIsRegisteredOrNot(address _account) public view returns(bool){
         return addUserToPlatform[_account];
     }

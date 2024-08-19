@@ -4,7 +4,7 @@ pragma solidity ^0.8.18;
 import {WethRegistry} from "./PoolModels/WethRegistry.sol";
 import {Escrow} from "./Escrow.sol";
 import {RunBroToken} from "./RunBroToken.sol";
-import {KYC} from "./NewKYC.sol";
+import {KYC} from "./DAO-KYC.sol";
 
 interface IWETH {
     function deposit() external payable;
@@ -146,7 +146,7 @@ contract MarketPlace {
 
     /** 
     * @dev
-    * Function to list the shoes
+    * Function to list the shoe, seller/company can only list if they are KYC verified.
     */
     function list(
         string memory _name,
@@ -157,7 +157,7 @@ contract MarketPlace {
         uint256 _quantity
     ) public payable {
         // Platform Fee is 10% of _cost and 10% of _RB_Factor.
-        // require(kyc.checkIfSellerIsRegisteredOrNot(msg.sender), "KYC-Unverified");
+        require(kyc.checkIfSellerIsRegisteredOrNot(msg.sender), "KYC-Unverified");
         require(msg.value >= (_cost * 10)/100 + (_RB_Factor * 10)/100, "Insufficient fee");
 
         s_shoeCount++;
@@ -226,16 +226,25 @@ contract MarketPlace {
         require(s_numberOfShoeIdsOwnerByUser[msg.sender].length >=3, "You haven't purchased 3 shoes yet!");
         runbroToken.mint(msg.sender, 1*10**18);
     }
-
+    /**
+    @dev The purpose of this function, to set the Home Address for shipping purpose.
+     */
     function setUserHomeAddress(string memory _homeAddress) public {
         s_userHomeAddress[msg.sender] = _homeAddress;
     }
+    /**
+    @dev The purpose of this function, to confirm from buyer side that shoe has been deliverd.
+     */
     function confirmDeliveryOfShoeByUser(uint256 _orderId) public {
         require(s_userInitiatedPurchase[msg.sender][_orderId], "You don't own this shoe");
         require(s_shoes[_orderId].confirmationByBuyer == false, "Shoe already delivered");
 
         s_shoes[_orderId].confirmationByBuyer = true;
     }
+    /**
+    @dev The purpose of this function, to confirm from seller side that shoe has been deliverd.
+     * once this function is executed, the funds will be transfered to seller from escrow.
+     */
     function confirmDeliveryOfShoeBySeller(uint256 _orderId) public {
         require(s_shoes[_orderId].payedToSeller == false, "Payment already done");
         require(s_shoes[_orderId].confirmationBySeller == false, "Shoe already delivered");
@@ -247,6 +256,11 @@ contract MarketPlace {
         s_shoes[_orderId].payedToSeller = true;
     }
 
+    /**
+    @dev A user can have multiple shoes, through this function he/she will be able to decide
+     * which selecte shoe he/she want's to move on with.
+     * it will return the shoeId.
+     */
     function selectShoe(uint256 _id) public returns(uint256){
         require(s_userInitiatedPurchase[msg.sender][_id], "You don't own this shoe");
         s_userSelectedShoe[msg.sender]= _id;

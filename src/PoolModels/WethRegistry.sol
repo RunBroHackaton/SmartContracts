@@ -22,9 +22,22 @@ contract WethRegistry is AutomationCompatibleInterface{
 
     MarketPlace public i_marketplace;
     WethReward public i_wethReward;
+
+    address public owner;
+    constructor(){
+        owner = msg.sender;
+    }
     
     /**
-     * Slots are where 100 users will be stored, next 100 in other slot.    
+     * @dev Slots are where 100 users will be stored, next 100 in other slot.
+     * it will contain it's unique slotId
+     * total number of users in slot (MAX is 100)
+     * array of addresses of different users
+     * array of rbfs (rb factor of shoes) of different users
+     * rewardFund is 80% of fund allocated to slot, during reward distribution to slots 
+     [from this fund reward for users based on steps will be calculated]
+     * rbRewardFund is 20% of fund allocated to slot, during reward distribution to slots 
+     [from this fund reward for users based on rbFactor will be calculated]   
      */
     struct Slot{
         uint256 slotId;
@@ -46,20 +59,34 @@ contract WethRegistry is AutomationCompatibleInterface{
         s_slot[_slotId].slotId = _slotId;
         s_slot[_slotId].numberOfUsers = 0;
     }
-
+    /**
+    @dev this function will be called during deployment, to load the marketplace interface at it's deployed address
+     */
     function _loadMarketPlace(address _marketplace) public {
         i_marketplace = MarketPlace(_marketplace);
     }
-
+    /**
+    @dev this function will be called during deployment, to load the wethReward interface at it's deployed address.
+     */
     function _loadWethReward(address _wethReward) public {
         i_wethReward = WethReward(_wethReward);
     }
-
+    /**
+    @dev this function will be called during deployment, to approve the wethReward contract to spend from it's address.
+    this will be relevant when user claims his/her reward from platform.
+     */
     function _doApprovalToWethReward(address weth, address wethRewardmodel) public{
         uint256 max = type(uint256).max;
         IWETH(weth).approve(wethRewardmodel, max);
     }
-
+    /**
+     @dev When user purchases the shoe from marketplace, they will added in the Slot
+     * What is Slot?
+     * Slot is like container that will store the datas of consecutive 100 users.
+     * so basically, this function adds the user is the latest vacant slot avalaible
+     * Why need of Slot?
+     * To make the competition only among 100 user (as slot conatains MAX 100 users) not all the users in platform.
+     */
     function _addUserToSlot(uint256 _slotId, address _user) public {
         if(s_slot[_slotId].numberOfUsers >= MAX_USERS_PER_SLOT){
             _updateSlotCountAndCreateNewSlot();
@@ -89,6 +116,9 @@ contract WethRegistry is AutomationCompatibleInterface{
         s_reservebalance += _amount;
     }
 
+    /**
+    @dev This function is just for testing purpose.
+     */
     function setRandomSlotData(
         uint256 _slotId, 
         uint256 _numberOfUsers, 
@@ -96,6 +126,9 @@ contract WethRegistry is AutomationCompatibleInterface{
         uint256[] memory _rbfs, 
         uint256 _rewardFund, 
         uint256 _rbrewardFund) public {
+
+        require(msg.sender == owner, "Only owner can call this function");
+        
         s_slot[_slotId].slotId = _slotId;
         s_slot[_slotId].numberOfUsers = _numberOfUsers;
         s_slot[_slotId].users = _users;
@@ -104,7 +137,9 @@ contract WethRegistry is AutomationCompatibleInterface{
         s_slot[_slotId].rbRewardFund = _rbrewardFund;
     }
 
-    // This function will be called by chainlink automation.
+    /**
+     @dev This function will be called by chainlink automation at 12:00 AM Daily.
+     */ 
     function distributeBalanceToSlot() public {
         uint256 balancePerSlot = (s_reservebalance)/(s_currentNumberOfSlots+1);
 

@@ -20,16 +20,10 @@ contract WethReward {
 
     uint256 public constant SCALING_FACTOR = 10 ** 3;
 
-    mapping(address => uint256) public s_startingTime;
-    // user => time => numberOfSteps till that time
-    // mapping(address => mapping(uint256 => uint256)) public s_userStepsAtMoment;
-
     mapping(address => uint256) public s_userSteps;
     mapping(address => uint256) public s_stepShareOfUser;
     mapping(address => uint256) public s_rbfsShareOfUser;
 
-    //Slot analysis
-    // uint256 public s_totalStepsByAllUsersInSlot;
     mapping(uint256 => uint256) public s_totalStepsPerSlot;
     mapping(address => uint256) public s_userRewards;
     mapping(address => bool) public s_claimedReward;
@@ -60,7 +54,12 @@ contract WethReward {
         totalStepsInSlot = s_totalStepsPerSlot[userSlotId];
 
     }
-
+    /**
+     * @dev This function will be used to claim the reward,
+     * @param _shoeId will be provided to calculate the reward for user,
+     * this function will call internal funtion _calculateRewardOfUserSteps(msg.sender, _shoeId); which will do the
+     * actual calculation is done.
+     */
     function takeRewardBasedOnShoeId(uint256 _shoeId) public{
         require(i_marketplace.checkUserRegistraction(msg.sender),"User not registered");
         require(i_marketplace.hasPurchasedShoe(msg.sender, _shoeId),"You are not eligible");
@@ -79,13 +78,21 @@ contract WethReward {
 
         s_lastClaimTimestamp[msg.sender] = currentTimestamp;
     }
-
+    /**
+     * @dev this function will do the actual calculation for user's reward
+     * the internal functions do the calculations based on steps share of user in his/her slot and also
+     * the calculation based on rbFactor share in slot. 
+     */
     function _calculateRewardOfUserSteps(address _account, uint256 _shoeId) public view returns(uint256){
         uint256 rewardOfUser = _calculateShareOfUsersStepsInSlot(_account) + _calculateShareOfUserRBfactorInSlot(_account, _shoeId);
         // s_userRewards[msg.sender]= rewardOfUser;
         return rewardOfUser;
     }
 
+    /**
+     * @dev this function will do the calculation based on user's steps share between yesterday 12:00 AM and today's 12:00 AM
+     * the share will be among all the members in user's slot.
+     */
     function _calculateShareOfUsersStepsInSlot(address _account) internal view returns(uint256){
         uint256 userSteps = s_userSteps[_account];
         uint256 userSlotId = i_wethRegistry._getUserSlotId(_account);
@@ -98,6 +105,10 @@ contract WethReward {
         return (userSteps * rewardFund)/totalStepsInSlot;
     }
 
+    /**
+     * @dev this function will do the calculation based on user's shoe RB Factor of shoe share between yesterday 12:00 AM and today's 
+     * 12:00 AM the share will be among all the members in user's slot.
+     */
     function _calculateShareOfUserRBfactorInSlot(address _account, uint256 _shoeid) internal view returns(uint256){
         uint256 userSlotId = i_wethRegistry._getUserSlotId(_account);
         (, , , uint256[] memory rbfs , , uint256 rbRewardFund) = i_wethRegistry._getSlotData(userSlotId);
@@ -112,17 +123,14 @@ contract WethReward {
         // return (userrbfs * rbRewardFund * SCALING_FACTOR)/totalrbfs;
         return (userrbfs * rbRewardFund)/totalrbfs;
     }
-
-    function _recordUserRewardData(address _account, uint256 _shoeId) public {
+    /**
+     @dev 
+     This function will record the user reward, user steps share and user rb share in the storage variable.
+     */
+    function _recordUserDatas(address _account, uint256 _shoeId) public {
         s_userRewards[msg.sender] = _calculateRewardOfUserSteps(_account, _shoeId);
-    }
-
-    function _recordUserStepsShare(address _account) public {
         s_stepShareOfUser[_account] = _calculateShareOfUsersStepsInSlot(_account);
-    }
-
-    function _recordUsersRbfsShare(address _account, uint256 _shoeid) public {
-        s_rbfsShareOfUser[_account] = _calculateShareOfUserRBfactorInSlot(_account, _shoeid);
+        s_rbfsShareOfUser[_account] = _calculateShareOfUserRBfactorInSlot(_account, _shoeId);
     }
 
     //------------------------------------VIEW-FUNCTION------------------------------------------
