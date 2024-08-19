@@ -26,16 +26,13 @@ contract WethReward {
 
     mapping(address => uint256) public s_userSteps;
     mapping(address => uint256) public s_stepShareOfUser;
-    mapping(address => uint256) public s_rbfsShareOfUser;
 
-    //Slot analysis
+    // Slot analysis
     // uint256 public s_totalStepsByAllUsersInSlot;
     mapping(uint256 => uint256) public s_totalStepsPerSlot;
     mapping(address => uint256) public s_userRewards;
     mapping(address => bool) public s_claimedReward;
     mapping(address => bool) public s_rewardCollectedByUser;
-
-    mapping(address => uint256) public s_lastClaimTimestamp;
 
     constructor(address _wethToken, address _marketPlace, address _wethRegistry, address _getStepsApi) {
         i_getStepsApi = GetStepsAPI(_getStepsApi);
@@ -61,32 +58,29 @@ contract WethReward {
 
     }
 
-    function takeRewardBasedOnShoeId(uint256 _shoeId) public{
+    /**
+    * @dev this function will only be called by user to claim his reward.
+    */    
+    modifier checkIfUserAlreadyClaimedDailyReward(address _account){
+        require(s_claimedReward[_account] == false, "User already claimed");
+        _;
+    }
+    function takeRewardBasedOnShoeId(uint256 _shoeId) checkIfUserAlreadyClaimedDailyReward(msg.sender) public{
         require(i_marketplace.checkUserRegistraction(msg.sender),"User not registered");
         require(i_marketplace.hasPurchasedShoe(msg.sender, _shoeId),"You are not eligible");
-
-        uint256 currentTimestamp = block.timestamp;
-        uint256 lastClaimTimestamp = s_lastClaimTimestamp[msg.sender];
-
-        uint256 nextMidnight = (currentTimestamp / 1 days) * 1 days + 1 days;
-
-        require(currentTimestamp >= nextMidnight || currentTimestamp - lastClaimTimestamp >= 1 days, "Reward already claimed today");
 
         uint256 rewardAmount = _calculateRewardOfUserSteps(msg.sender, _shoeId);
         s_userRewards[msg.sender]= rewardAmount;
         i_weth.transferFrom(address(i_wethRegistry), msg.sender, rewardAmount);
         s_rewardCollectedByUser[msg.sender]=true;
-
-        s_lastClaimTimestamp[msg.sender] = currentTimestamp;
     }
 
-    function _calculateRewardOfUserSteps(address _account, uint256 _shoeId) public view returns(uint256){
+    function _calculateRewardOfUserSteps(address _account, uint256 _shoeId) public returns(uint256){
         uint256 rewardOfUser = _calculateShareOfUsersStepsInSlot(_account) + _calculateShareOfUserRBfactorInSlot(_account, _shoeId);
-        // s_userRewards[msg.sender]= rewardOfUser;
+        s_userRewards[msg.sender]= rewardOfUser;
         return rewardOfUser;
     }
-
-    function _calculateShareOfUsersStepsInSlot(address _account) internal view returns(uint256){
+    function _calculateShareOfUsersStepsInSlot(address _account) internal returns(uint256){
         uint256 userSteps = s_userSteps[_account];
         uint256 userSlotId = i_wethRegistry._getUserSlotId(_account);
         uint256 totalStepsInSlot = s_totalStepsPerSlot[userSlotId];
@@ -94,8 +88,8 @@ contract WethReward {
         (, , , ,uint256 rewardFund,) = i_wethRegistry._getSlotData(userSlotId);
 
         // s_stepShareOfUser[_account] = (userSteps * rewardFund * SCALING_FACTOR)/totalStepsInSlot;
-        // s_stepShareOfUser[_account] = (userSteps * rewardFund)/totalStepsInSlot;
-        return (userSteps * rewardFund)/totalStepsInSlot;
+        s_stepShareOfUser[_account] = (userSteps * rewardFund)/totalStepsInSlot;
+        return s_stepShareOfUser[_account];
     }
 
     function _calculateShareOfUserRBfactorInSlot(address _account, uint256 _shoeid) internal view returns(uint256){
@@ -111,18 +105,6 @@ contract WethReward {
 
         // return (userrbfs * rbRewardFund * SCALING_FACTOR)/totalrbfs;
         return (userrbfs * rbRewardFund)/totalrbfs;
-    }
-
-    function _recordUserRewardData(address _account, uint256 _shoeId) public {
-        s_userRewards[msg.sender] = _calculateRewardOfUserSteps(_account, _shoeId);
-    }
-
-    function _recordUserStepsShare(address _account) public {
-        s_stepShareOfUser[_account] = _calculateShareOfUsersStepsInSlot(_account);
-    }
-
-    function _recordUsersRbfsShare(address _account, uint256 _shoeid) public {
-        s_rbfsShareOfUser[_account] = _calculateShareOfUserRBfactorInSlot(_account, _shoeid);
     }
 
     //------------------------------------VIEW-FUNCTION------------------------------------------

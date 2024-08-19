@@ -157,7 +157,7 @@ contract MarketPlace {
         uint256 _quantity
     ) public payable {
         // Platform Fee is 10% of _cost and 10% of _RB_Factor.
-        require(kyc.checkIfSellerIsRegisteredOrNot(msg.sender), "KYC-Unverified");
+        // require(kyc.checkIfSellerIsRegisteredOrNot(msg.sender), "KYC-Unverified");
         require(msg.value >= (_cost * 10)/100 + (_RB_Factor * 10)/100, "Insufficient fee");
 
         s_shoeCount++;

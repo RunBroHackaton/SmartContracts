@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 import {MarketPlace} from "../Marketplace.sol";
+import {WethReward} from "../RewardModels/WethRewardModel.sol";
 import "forge-std/console.sol";
 
 interface IWETH {
@@ -20,6 +21,7 @@ contract WethRegistry is AutomationCompatibleInterface{
     uint256 distributionTimeStamp;
 
     MarketPlace public i_marketplace;
+    WethReward public i_wethReward;
     
     /**
      * Slots are where 100 users will be stored, next 100 in other slot.    
@@ -47,6 +49,10 @@ contract WethRegistry is AutomationCompatibleInterface{
 
     function _loadMarketPlace(address _marketplace) public {
         i_marketplace = MarketPlace(_marketplace);
+    }
+
+    function _loadWethReward(address _wethReward) public {
+        i_wethReward = WethReward(_wethReward);
     }
 
     function _doApprovalToWethReward(address weth, address wethRewardmodel) public{
@@ -96,8 +102,6 @@ contract WethRegistry is AutomationCompatibleInterface{
         s_slot[_slotId].rewardFund = _rewardFund;
         s_slot[_slotId].rbfs = _rbfs;
         s_slot[_slotId].rbRewardFund = _rbrewardFund;
-
-
     }
 
     // This function will be called by chainlink automation.
@@ -111,7 +115,8 @@ contract WethRegistry is AutomationCompatibleInterface{
             s_slot[i].rewardFund = rewardFundBasedOnSteps;
             s_slot[i].rbRewardFund = rewardFundBasedOnRBFactor;       
         }
-        require(address(this).balance == 0, "Balance not cleared");
+        uint256 totalDistributed = rewardFundBasedOnSteps * (s_currentNumberOfSlots + 1) + rewardFundBasedOnRBFactor * (s_currentNumberOfSlots + 1);
+        require(totalDistributed <= s_reservebalance, "Incorrect balance distribution");
         distributionTimeStamp = block.timestamp;
     }
 
@@ -128,7 +133,7 @@ contract WethRegistry is AutomationCompatibleInterface{
 
     function performUpkeep(bytes calldata /* performData */) external override {
         if ((block.timestamp - distributionTimeStamp) > 24 hours) {
-            distributionTimeStamp = block.timestamp;
+            distributeBalanceToSlot();
         }
     }
 

@@ -42,24 +42,24 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
 //----Reward related Stuff------------------------------------
     uint256 public s_contractCreationTime;
     mapping(address => mapping(uint256 => bool)) public s_IsUserAlreadyLogin;
-    uint256 public s_distributionTimeStamp;
+    // uint256 public s_distributionTimeStamp;
     constructor(address _wethregistry) FunctionsClient(router) ConfirmedOwner(msg.sender) {
         wethregistry = WethRegistry(_wethregistry);
         s_contractCreationTime = block.timestamp;
-        s_distributionTimeStamp = getNext6PM(block.timestamp);
+        // s_distributionTimeStamp = getNext6PM(block.timestamp);
     }
 
     /**
     * @dev rewardDistributionTime is 6 PM Daily. 
     */
-    function getNext6PM(uint256 timestamp) public pure returns (uint256) {
-        uint256 currentDay = timestamp / 1 days;
-        uint256 today6PM = currentDay * 1 days + 18 hours;
-        if (timestamp >= today6PM) {
-            today6PM += 1 days;
-        }
-        return today6PM;
-    }
+    // function getNext6PM(uint256 timestamp) public pure returns (uint256) {
+    //     uint256 currentDay = timestamp / 1 days;
+    //     uint256 today6PM = currentDay * 1 days + 18 hours;
+    //     if (timestamp >= today6PM) {
+    //         today6PM += 1 days;
+    //     }
+    //     return today6PM;
+    // }
     /** 
     * @dev called by automation at 24 hr daily
     */ 
