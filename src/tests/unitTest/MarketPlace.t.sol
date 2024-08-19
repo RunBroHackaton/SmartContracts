@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: MIT
+
+/// NOTE:
+/// To run this test file, in the `Marketplace.sol` comment out the check
+/// `require(kyc.checkIfSellerIsRegisteredOrNot(msg.sender), "KYC-Unverified");` in `list` function.
+
 pragma solidity ^0.8.18;
 
 import "forge-std/Test.sol";

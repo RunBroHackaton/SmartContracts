@@ -11,9 +11,6 @@ import {Escrow} from "../Escrow.sol";
 
 // DAO imports
 import {KYC} from "../NewKYC.sol";
-
-
-
 interface IWETH {
     function deposit() external payable;
 

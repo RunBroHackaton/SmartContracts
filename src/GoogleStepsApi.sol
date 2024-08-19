@@ -63,22 +63,22 @@ contract GetStepsAPI is FunctionsClient, ConfirmedOwner {
     /** 
     * @dev called by automation at 24 hr daily
     */ 
-    function updateRewardDistributionTime() public {
-        require(block.timestamp >= s_distributionTimeStamp, "It's not time yet");
-        /** 
-        * @dev Reseting user steps data to initial value, if this function is called.
-        */ 
-        for (uint256 i = 0; i < stepsDataRecords.length; i++) {
-                address user = stepsDataRecords[i].requester;
-                delete userStepsData[user];
-                hasUserFetchedData[user] = false;
-        }
-        delete stepsDataRecords;
+    // function updateRewardDistributionTime() public {
+    //     require(block.timestamp >= s_distributionTimeStamp, "It's not time yet");
+    //     /** 
+    //     * @dev Reseting user steps data to initial value, if this function is called.
+    //     */ 
+    //     for (uint256 i = 0; i < stepsDataRecords.length; i++) {
+    //             address user = stepsDataRecords[i].requester;
+    //             delete userStepsData[user];
+    //             hasUserFetchedData[user] = false;
+    //     }
+    //     delete stepsDataRecords;
 
-        // Reset total steps count
-        totalStepsByAllUsersOnPreviousDay = 0;
-        s_distributionTimeStamp += 1 days;
-    }
+    //     // Reset total steps count
+    //     totalStepsByAllUsersOnPreviousDay = 0;
+    //     s_distributionTimeStamp += 1 days;
+    // }
     
     function _getMidnightTimestamp(uint256 timestamp) internal pure returns (uint256) {
         uint256 currentDay = timestamp / 1 days;

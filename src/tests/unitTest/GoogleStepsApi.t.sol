@@ -38,7 +38,6 @@ contract GetStepsAPITest is Test {
         // Fast forward time to ensure the distribution time has passed
         vm.warp(getStepsAPI.s_distributionTimeStamp() + 1);
 
-        getStepsAPI.updateRewardDistributionTime();
         assertEq(getStepsAPI.s_distributionTimeStamp(), getStepsAPI.getNext6PM(block.timestamp));
         assertEq(getStepsAPI.totalStepsByAllUsersOnPreviousDay(), 0);
     }

@@ -40,17 +40,7 @@ contract WethReward {
         i_wethRegistry = WethRegistry(_wethRegistry);
         i_weth = IWETH(_wethToken);
     }
-
-    /**
-     * @dev This function will be called by user to retrive his steps.
-     */ 
-    function sendRequestToFetchSteps(string memory authToken) public{
-        string[] memory args = new string[](1);
-        args[0] = "0";
-        (bool success, bytes memory data) = address(i_getStepsApi).delegatecall(
-            abi.encodeWithSignature("sendRequest(string[],string)", args, authToken)
-         );
-    }
+    
     /**
     * @dev this function will only be called if the Event from previous function is recorded true on frontend side..
     * or on frontEnd Side their is time dealy of 30 - 45 secs to call this function after first function

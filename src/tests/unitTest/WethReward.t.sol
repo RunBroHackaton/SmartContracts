@@ -62,7 +62,6 @@ contract WethRewardTest is Test {
         vm.startPrank(buyer);
         marketPlace.buy{value: 1 ether}(1);
 
-        wethReward.sendRequestToFetchSteps(authToken);
         wethReward.recordFetchedSteps(buyer);
 
         wethReward.takeRewardBasedOnShoeId(1);
