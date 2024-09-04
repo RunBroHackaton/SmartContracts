@@ -21,8 +21,8 @@ Here’s an enhanced version of the content for your README file:
 
 ---
 
-## Indepth Architecture
-![image](./contractArchitechture/RB_smart_contract_architecture.svg)
+## In-depth Architecture
+![image](./Externals/contractArchitechture/RB_smart_contract_architecture.svg)
 
 ## Components
 
@@ -60,7 +60,7 @@ Here’s an enhanced version of the content for your README file:
   - Reserve balance updates.
   - Reward distribution using Chainlink Automation.
 
-  ![image](./Assets/wethrewardModel.PNG)
+  ![image](./Externals/Assets/wethrewardModel.PNG)
 
 ### 6. **WethReward Contract**
 - **Purpose**: Manages rewards distribution based on user activity.

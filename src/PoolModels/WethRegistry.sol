@@ -76,8 +76,8 @@ contract WethRegistry is AutomationCompatibleInterface{
     this will be relevant when user claims his/her reward from platform.
      */
     function _doApprovalToWethReward(address weth, address wethRewardmodel) public{
-        uint256 max = type(uint256).max;
-        IWETH(weth).approve(wethRewardmodel, max);
+        uint256 largeAmount = 1; // Example large amount
+        IWETH(weth).approve(wethRewardmodel, largeAmount);
     }
     /**
      @dev When user purchases the shoe from marketplace, they will added in the Slot
